@@ -2,7 +2,8 @@ package com.feedping.util;
 
 import com.feedping.exception.ErrorCode;
 import com.feedping.exception.GlobalException;
-import java.util.Random;
+import java.nio.ByteBuffer;
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,11 +18,12 @@ public class EmailVerificationManager {
     private static final String VERIFIED_EMAIL_PREFIX = "verified_email:";
     private static final long VERIFICATION_EXPIRATION_TIME = 5 * 60; // 5분
     private static final long VERIFIED_EMAIL_EXPIRATION_TIME = 30 * 60; // 30분
-    private static final Random random = new Random();
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     public String createCode(String email) {
-        String code = generateCode();
-        redisTemplate.opsForValue().set(EMAIL_VERIFICATION_PREFIX + email, code, VERIFICATION_EXPIRATION_TIME, TimeUnit.SECONDS);
+        String code = generateSecureCode();
+        redisTemplate.opsForValue()
+                .set(EMAIL_VERIFICATION_PREFIX + email, code, VERIFICATION_EXPIRATION_TIME, TimeUnit.SECONDS);
         return code;
     }
 
@@ -32,7 +34,8 @@ public class EmailVerificationManager {
         if (storedCode != null && storedCode.equals(code)) {
             redisTemplate.delete(key);
             // 인증 완료된 이메일 저장
-            redisTemplate.opsForValue().set(VERIFIED_EMAIL_PREFIX + email, "verified", VERIFIED_EMAIL_EXPIRATION_TIME, TimeUnit.SECONDS);
+            redisTemplate.opsForValue()
+                    .set(VERIFIED_EMAIL_PREFIX + email, "verified", VERIFIED_EMAIL_EXPIRATION_TIME, TimeUnit.SECONDS);
             return;
         }
 
@@ -44,8 +47,10 @@ public class EmailVerificationManager {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
-    private String generateCode() {
-        return String.format("%06d", random.nextInt(1000000));
+    private String generateSecureCode() {
+        byte[] randomBytes = new byte[32];
+        secureRandom.nextBytes(randomBytes);
+        return String.format("%06d", Math.abs(ByteBuffer.wrap(randomBytes).getInt()) % 1000000);
     }
 
 }
