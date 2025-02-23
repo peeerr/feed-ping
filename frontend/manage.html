@@ -6,22 +6,53 @@
     <title>FeedPing - 구독 관리</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <script src="/js/config.js"></script>
+    <script src="/config.js"></script>
     <style>
         .btn-primary {
-            @apply bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors;
+            background-color: #3B82F6;
+            color: white;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563EB;
         }
 
         .btn-danger {
-            @apply bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors;
+            background-color: #EF4444;
+            color: white;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-danger:hover {
+            background-color: #DC2626;
         }
 
         .input-field {
-            @apply w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all;
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
         }
 
         .card {
-            @apply bg-white rounded-xl shadow-lg p-6 mb-4;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .gradient-bg {
@@ -29,19 +60,31 @@
         }
 
         .error-message {
-            @apply text-red-500 text-sm mt-1 hidden;
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
         }
 
         .subscription-item {
-            @apply border border-gray-200 rounded-lg p-4 mb-4 hover:shadow-md transition-shadow;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .subscription-item:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .subscription-item:hover .hover-show {
-            @apply opacity-100;
+            opacity: 1;
         }
 
         .hover-show {
-            @apply opacity-0 transition-opacity;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
     </style>
 </head>
