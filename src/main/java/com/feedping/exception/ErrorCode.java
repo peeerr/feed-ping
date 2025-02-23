@@ -1,8 +1,10 @@
 package com.feedping.exception;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -31,7 +33,12 @@ public enum ErrorCode {
     // 요청 제한/쓰로틀링
     ALREADY_SENT_VERIFICATION("이미 인증 이메일을 보냈습니다. 잠시 후 다시 시도하세요.", TOO_MANY_REQUESTS),
 
-    EMAIL_SEND_FAILED("이메일 전송에 실패했습니다.", INTERNAL_SERVER_ERROR);
+    EMAIL_SEND_FAILED("이메일 전송에 실패했습니다.", INTERNAL_SERVER_ERROR),
+
+    // RSS 관련
+    RSS_FEED_PARSING_ERROR("RSS 피드를 가져오거나 파싱하는 중 오류가 발생했습니다.", INTERNAL_SERVER_ERROR),
+    RSS_FEED_CONNECTION_ERROR("RSS 피드 서버에 연결할 수 없습니다.", SERVICE_UNAVAILABLE),
+    RSS_FEED_INVALID_FORMAT("잘못된 RSS 피드 형식입니다.", BAD_REQUEST);
 
     private final String message;
     private final HttpStatus status;

@@ -1,17 +1,20 @@
 package com.feedping.util;
 
+import com.feedping.domain.RssItem;
 import com.feedping.exception.ErrorCode;
 import com.feedping.exception.GlobalException;
 import com.feedping.service.AuthTokenService;
 import jakarta.mail.internet.MimeMessage;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class EmailSender {
@@ -20,9 +23,6 @@ public class EmailSender {
     private final SpringTemplateEngine templateEngine;
     private final MailProperties mailProperties;
     private final AuthTokenService authTokenService;
-
-    @Value("${app.mail.base-url}")
-    private String baseUrl;
 
     private void sendMail(String to, String subject, String content) {
         try {
@@ -36,6 +36,7 @@ public class EmailSender {
 
             mailSender.send(message);
         } catch (Exception e) {
+            log.error("Failed to send email to {}", to, e);
             throw new GlobalException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }
@@ -50,18 +51,20 @@ public class EmailSender {
         sendMail(to, mailProperties.template().verificationSubject(), content);
     }
 
-    public void sendSubscriptionEmail(String to, String title, String content) {
+    public void sendRssNotification(String to, String siteName, List<RssItem> items) {
+        Context context = new Context();
         String token = authTokenService.createTokenForEmail(to);
 
-        Context context = new Context();
-        context.setVariable("title", title);
-        context.setVariable("content", content);
+        context.setVariable("siteName", siteName);
+        context.setVariable("items", items);
         context.setVariable("token", token);
-        context.setVariable("baseUrl", baseUrl);
+        context.setVariable("baseUrl", mailProperties.baseUrl());
 
-        String emailContent = templateEngine.process("mail/subscription-email", context);
+        String content = templateEngine.process("mail/rss-notification", context);
 
-        sendMail(to, String.format("[FeedPing] %s", title), emailContent);
+        sendMail(to,
+                String.format("[FeedPing] %s의 새 글이 등록되었습니다.", siteName),
+                content);
     }
 
 }
