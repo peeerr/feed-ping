@@ -311,7 +311,7 @@
                     <button type="submit" class="btn-primary flex-1">확인</button>
                 </div>
                 <div class="flex space-x-4">
-                    <button type="button" onclick="resendVerificationCode()"
+                    <button type="button" id="resendButton" onclick="resendVerificationCode()"
                             class="text-blue-600 hover:text-blue-800 text-sm flex-1">
                         인증 코드 재전송
                     </button>
@@ -573,11 +573,13 @@
     // 인증 코드 재전송
     async function resendVerificationCode() {
         const email = currentEmail;
-        const submitButton = document.querySelector('#verificationForm button[type="submit"]');
+        const resendButton = document.getElementById('resendButton');
         const errorDiv = document.getElementById('verificationError');
+        const originalText = resendButton.innerHTML;
 
         try {
-            submitButton.disabled = true;
+            resendButton.disabled = true;
+            resendButton.innerHTML = '<span class="animate-spin">⌛</span> 처리중...';
             errorDiv.classList.add('hidden');
 
             const response = await fetch(window.APP_CONFIG.api.baseUrl + window.APP_CONFIG.api.endpoints.emailVerification.send, {
@@ -585,7 +587,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({email})
+                body: JSON.stringify({ email })
             });
 
             const data = await response.json();
@@ -602,7 +604,8 @@
             errorDiv.textContent = '서버 오류가 발생했습니다.';
             errorDiv.classList.remove('hidden');
         } finally {
-            submitButton.disabled = false;
+            resendButton.disabled = false;
+            resendButton.innerHTML = originalText;
         }
     }
 
