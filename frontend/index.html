@@ -389,6 +389,25 @@
     </div>
 </div>
 
+<!-- Resend Success Modal -->
+<div id="resendSuccessModal" class="modal-backdrop hidden">
+    <div class="modal animate__animated animate__fadeInDown">
+        <div class="text-center">
+            <div class="mb-4 text-green-500">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">인증 코드가 재전송되었습니다</h2>
+            <p class="text-gray-600 mb-6">이메일을 확인해주세요.</p>
+            <button onclick="closeModal('resendSuccessModal')" class="btn-primary w-full">
+                확인
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <footer class="bg-gray-800 text-white py-12">
     <div class="max-w-6xl mx-auto px-4">
@@ -493,13 +512,16 @@
             const now = new Date().getTime();
             const remaining = Math.max(0, Math.ceil((storedEndTime - now) / 1000));
 
-            if (remaining <= 0) {
+            if (remaining > 0) {
+                currentEmail = sentEmail;
+                openModal('verificationModal');
+                startTimer(remaining);
+                return;
+            } else {
                 clearInterval(timerInterval);
                 clearVerificationState();
                 closeModal('verificationModal');
                 openModal('timeoutModal');
-            } else {
-                clearVerificationState();
             }
         }
 
@@ -570,7 +592,7 @@
             if (response.ok) {
                 // 타이머 리셋
                 startTimer(300);
-                alert('인증 코드가 재전송되었습니다.');
+                openModal('resendSuccessModal');
             } else {
                 errorDiv.textContent = data.message || '인증 코드 재전송에 실패했습니다.';
                 errorDiv.classList.remove('hidden');
@@ -785,6 +807,15 @@
                 closeModal(modalId);
             });
         }
+    });
+
+    // 모달 외부 클릭시 닫기
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) {
+                closeModal(backdrop.id);
+            }
+        });
     });
 </script>
 </body>
