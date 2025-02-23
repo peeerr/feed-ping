@@ -695,13 +695,14 @@
         });
     });
 
-    // 모달 외부 클릭시 닫기
-    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-        backdrop.addEventListener('click', (e) => {
-            if (e.target === backdrop) {
-                closeModal(backdrop.id);
-            }
-        });
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-backdrop.visible').forEach(modal => {
+                const modalId = modal.id;
+                closeModal(modalId);
+            });
+        }
     });
 </script>
 </body>
