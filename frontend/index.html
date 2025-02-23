@@ -427,27 +427,52 @@
     function startTimer(duration) {
         let timer = duration;
         const timerDisplay = document.getElementById('timer');
+        const endTime = new Date().getTime() + (duration * 1000);
+
+        // 타이머 종료 시간 저장
+        localStorage.setItem('verificationEndTime', endTime);
 
         clearInterval(timerInterval);
 
         timerInterval = setInterval(() => {
-            const minutes = parseInt(timer / 60, 10);
-            const seconds = parseInt(timer % 60, 10);
+            const now = new Date().getTime();
+            const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+
+            const minutes = parseInt(remaining / 60, 10);
+            const seconds = parseInt(remaining % 60, 10);
 
             timerDisplay.textContent = minutes.toString().padStart(2, '0') + ':'
                 + seconds.toString().padStart(2, '0');
 
-            if (--timer < 0) {
+            if (remaining <= 0) {
                 clearInterval(timerInterval);
                 timerDisplay.textContent = '시간 만료';
                 document.getElementById('verificationCode').disabled = true;
                 document.getElementById('verificationForm').querySelector('button[type="submit"]').disabled = true;
+                clearVerificationState();  // 시간 만료시 상태 초기화
             }
         }, 1000);
     }
 
     // 시작하기 버튼 클릭 핸들러
     async function handleStartButton() {
+        const sentEmail = localStorage.getItem('verificationEmailSent');
+        const sentTime = localStorage.getItem('verificationSentTime');
+
+        if (sentEmail && sentTime) {
+            const now = new Date().getTime();
+            const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+
+            if (remaining > 0) {
+                currentEmail = sentEmail;
+                openModal('verificationModal');
+                startTimer(remaining);  // 남은 시간으로 타이머 재시작
+                return;
+            } else {
+                clearVerificationState();
+            }
+        }
+
         const lastEmail = localStorage.getItem('lastVerifiedEmail');
 
         if (!lastEmail) {
@@ -479,6 +504,12 @@
             console.error('인증 상태 확인 중 오류 발생:', error);
             openModal('emailModal');
         }
+    }
+
+    function clearVerificationState() {
+        localStorage.removeItem('verificationEmailSent');
+        localStorage.removeItem('verificationSentTime');
+        localStorage.removeItem('verificationEndTime');
     }
 
     // 시작하기 버튼에 핸들러 연결
@@ -527,6 +558,10 @@
                 const data = await response.json();
 
                 if (response.ok) {
+                    // 이메일 발송 성공시 상태 저장
+                    localStorage.setItem('verificationEmailSent', email);
+                    localStorage.setItem('verificationSentTime', new Date().getTime());
+
                     currentEmail = email;
                     closeModal('emailModal');
                     openModal('verificationModal');
