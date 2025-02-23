@@ -23,7 +23,6 @@ public enum ErrorCode {
 
     // 중복/충돌 관련
     ALREADY_SUBSCRIBED_RSS("이미 구독한 RSS Feed입니다.", CONFLICT),
-    EMAIL_ALREADY_REGISTERED("이미 등록된 이메일입니다.", CONFLICT),
 
     // 인증/토큰 관련
     INVALID_TOKEN("유효하지 않은 토큰입니다.", UNAUTHORIZED),

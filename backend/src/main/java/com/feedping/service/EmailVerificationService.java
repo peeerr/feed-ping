@@ -21,10 +21,6 @@ public class EmailVerificationService {
     private final AuthTokenService authTokenService;
 
     public void sendVerificationEmail(String email) {
-        if (memberRepository.existsByEmail(email)) {
-            throw new GlobalException(ErrorCode.EMAIL_ALREADY_REGISTERED);
-        }
-
         String code = codeManager.createCode(email);
         emailSender.sendVerificationEmail(email, code);
     }
