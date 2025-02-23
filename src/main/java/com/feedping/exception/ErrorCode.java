@@ -1,6 +1,7 @@
 package com.feedping.exception;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -28,7 +29,9 @@ public enum ErrorCode {
     EMAIL_NOT_VERIFIED("이메일 인증이 필요합니다. 인증 후 30분 이내에 다시 시도해 주세요", UNAUTHORIZED),
 
     // 요청 제한/쓰로틀링
-    ALREADY_SENT_VERIFICATION("이미 인증 이메일을 보냈습니다. 잠시 후 다시 시도하세요.", TOO_MANY_REQUESTS);
+    ALREADY_SENT_VERIFICATION("이미 인증 이메일을 보냈습니다. 잠시 후 다시 시도하세요.", TOO_MANY_REQUESTS),
+
+    EMAIL_SEND_FAILED("이메일 전송에 실패했습니다.", INTERNAL_SERVER_ERROR);
 
     private final String message;
     private final HttpStatus status;

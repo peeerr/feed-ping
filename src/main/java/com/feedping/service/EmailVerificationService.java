@@ -26,7 +26,7 @@ public class EmailVerificationService {
         }
 
         String code = codeManager.createCode(email);
-        emailSender.sendEmail(email, "이메일 인증", "인증 코드: " + code);
+        emailSender.sendVerificationEmail(email, code);
     }
 
     public void verifyEmail(String email, String code) {

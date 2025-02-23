@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;">
+<div style="max-width: 600px; margin: 0 auto;">
+    <div style="background: #4A90E2; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">FeedPing</h1>
+    </div>
+    <div style="background: #ffffff; padding: 40px; border: 1px solid #e9e9e9; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #333; font-size: 20px; margin-bottom: 20px;">이메일 인증</h2>
+        <p style="color: #666; line-height: 1.6;">안녕하세요!</p>
+        <p style="color: #666; line-height: 1.6;">FeedPing 서비스 이용을 위한 이메일 인증 코드입니다.</p>
+
+        <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
+            <div style="font-size: 36px; font-weight: bold; color: #4A90E2; letter-spacing: 8px;" th:text="${code}">123456</div>
+        </div>
+
+        <p style="color: #666; line-height: 1.6;">인증 코드는 <span th:text="${expirationMinutes}">5</span>분간 유효합니다.</p>
+        <p style="color: #666; line-height: 1.6;">본인이 요청하지 않은 경우 이 메일을 무시해주세요.</p>
+    </div>
+    <div style="text-align: center; color: #666; font-size: 12px; margin-top: 20px; padding: 0 20px;">
+        <p style="margin: 5px 0;">© 2024 FeedPing. All rights reserved.</p>
+        <p style="margin: 5px 0;">본 메일은 발신전용입니다.</p>
+    </div>
+</div>
+</body>
+</html>
