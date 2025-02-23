@@ -11,7 +11,8 @@ public record MailProperties(
         @NotEmpty String username,
         @NotEmpty String senderName,
         Template template,
-        @Pattern(regexp = "^https?://.*") String baseUrl
+//        @Pattern(regexp = "^https?://.*")
+        String baseUrl
 ) {
     public MailProperties {
         template = template != null ? template : new Template(
