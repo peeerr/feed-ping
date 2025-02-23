@@ -4,7 +4,7 @@ import com.feedping.exception.ErrorCode;
 import com.feedping.exception.GlobalException;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -23,7 +23,7 @@ public class EmailVerificationManager {
     public String createCode(String email) {
         String code = generateSecureCode();
         redisTemplate.opsForValue()
-                .set(EMAIL_VERIFICATION_PREFIX + email, code, VERIFICATION_EXPIRATION_TIME, TimeUnit.SECONDS);
+                .set(EMAIL_VERIFICATION_PREFIX + email, code, Duration.ofSeconds(VERIFICATION_EXPIRATION_TIME));
         return code;
     }
 
@@ -35,7 +35,7 @@ public class EmailVerificationManager {
             redisTemplate.delete(key);
             // 인증 완료된 이메일 저장
             redisTemplate.opsForValue()
-                    .set(VERIFIED_EMAIL_PREFIX + email, "verified", VERIFIED_EMAIL_EXPIRATION_TIME, TimeUnit.SECONDS);
+                    .set(VERIFIED_EMAIL_PREFIX + email, "verified", Duration.ofSeconds(VERIFIED_EMAIL_EXPIRATION_TIME));
             return;
         }
 
