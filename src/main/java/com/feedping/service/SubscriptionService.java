@@ -56,12 +56,13 @@ public class SubscriptionService {
     }
 
     public void unsubscribeRssWithToken(Long rssId, RssUnsubscribeRequest request) {
-        String token = request.getToken();
-
-        Member member = getMemberByToken(token);
+        Member member = getMemberByToken(request.getToken());
         RssFeed rssFeed = getRssFeed(rssId);
 
-        subscriptionRepository.deleteByMemberAndRssFeed(member, rssFeed);
+        Subscription subscription = subscriptionRepository.findByMemberAndRssFeed(member, rssFeed)
+                .orElseThrow(() -> new GlobalException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+
+        subscriptionRepository.delete(subscription);
     }
 
     private void subscribe(Member member, String rssUrl, String siteName) {
