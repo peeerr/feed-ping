@@ -506,60 +506,53 @@
 
     // 시작하기 버튼 클릭 핸들러
     async function handleStartButton() {
-        const sentEmail = localStorage.getItem('verificationEmailSent');
-        const storedEndTime = localStorage.getItem('verificationEndTime');  // 인증 타이머 종료 시간
+        // 1) 이미 인증 완료된 이메일이 있는지 먼저 확인
+        const lastEmail = localStorage.getItem('lastVerifiedEmail');
+        if (lastEmail) {
+            try {
+                // 서버에서 인증 상태 재확인
+                const response = await fetch(`${window.APP_CONFIG.api.baseUrl}/email-verification/status?email=${encodeURIComponent(lastEmail)}`);
+                if (!response.ok) throw new Error('인증 상태 확인 실패');
 
+                const {data: isVerified} = await response.json();
+                if (isVerified) {
+                    // 이미 인증 완료된 이메일 => 바로 rssModal
+                    currentEmail = lastEmail;
+                    openModal('rssModal');
+                    return;
+                } else {
+                    // 서버 응답이 미인증이면 lastVerifiedEmail 제거 후 다음 단계로
+                    localStorage.removeItem('lastVerifiedEmail');
+                }
+            } catch (error) {
+                console.error('인증 상태 확인 중 오류 발생:', error);
+                // 에러 발생 시 그냥 다음 단계로 넘어가서 새 인증 시작
+            }
+        }
+
+        // 2) 인증 진행 중 상태(타이머) 확인
+        const sentEmail = localStorage.getItem('verificationEmailSent');
+        const storedEndTime = localStorage.getItem('verificationEndTime');
         if (sentEmail && storedEndTime) {
             const now = Date.now();
             const remaining = Math.max(0, Math.ceil((storedEndTime - now) / 1000));
 
             if (remaining > 0) {
-                // 아직 인증 타이머가 남아있다면, 인증 모달을 띄워 진행하게 함
+                // 타이머가 남아 있으면 인증 모달
                 currentEmail = sentEmail;
                 openModal('verificationModal');
                 startTimer(remaining);
                 return;
             } else {
-                // 타이머가 종료되었으면 상태를 초기화하고 타임아웃 모달을 띄움
+                // 시간 초과 => 타임아웃 모달
                 clearInterval(timerInterval);
                 clearVerificationState();
-                closeModal('verificationModal');
                 openModal('timeoutModal');
                 return;
             }
         }
 
-        // 인증 완료된 이메일이 저장되어 있다면 lastVerifiedEmail을 확인
-        const lastEmail = localStorage.getItem('lastVerifiedEmail');
-
-        if (lastEmail) {
-            try {
-                // 서버에서 인증 상태를 재확인
-                const response = await fetch(`${window.APP_CONFIG.api.baseUrl}/email-verification/status?email=${encodeURIComponent(lastEmail)}`);
-                if (!response.ok) {
-                    throw new Error('인증 상태 확인 실패');
-                }
-                const {data: isVerified} = await response.json();
-
-                if (isVerified) {
-                    // 인증된 이메일이면 바로 RSS 등록 모달로 이동
-                    currentEmail = lastEmail;
-                    openModal('rssModal');
-                    return;
-                } else {
-                    // 서버에서는 인증되지 않은 것으로 응답하면 저장된 이메일 삭제 후 이메일 입력 모달 띄움
-                    localStorage.removeItem('lastVerifiedEmail');
-                    openModal('emailModal');
-                    return;
-                }
-            } catch (error) {
-                console.error('인증 상태 확인 중 오류 발생:', error);
-                openModal('emailModal');
-                return;
-            }
-        }
-
-        // 위 조건들에 해당되지 않으면, 처음 사용자이거나 인증 상태가 없으므로 이메일 입력 모달 띄움
+        // 3) 여기까지 왔다면, 새로 인증을 시작해야 하므로 이메일 모달
         openModal('emailModal');
     }
 
