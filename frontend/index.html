@@ -425,11 +425,10 @@
 
     // 타이머 기능
     function startTimer(duration) {
-        let timer = duration;
         const timerDisplay = document.getElementById('timer');
+        // endTime을 새로 계산
         const endTime = new Date().getTime() + (duration * 1000);
 
-        // 타이머 종료 시간 저장
         localStorage.setItem('verificationEndTime', endTime);
 
         clearInterval(timerInterval);
@@ -449,7 +448,7 @@
                 timerDisplay.textContent = '시간 만료';
                 document.getElementById('verificationCode').disabled = true;
                 document.getElementById('verificationForm').querySelector('button[type="submit"]').disabled = true;
-                clearVerificationState();  // 시간 만료시 상태 초기화
+                clearVerificationState();
             }
         }, 1000);
     }
@@ -457,16 +456,16 @@
     // 시작하기 버튼 클릭 핸들러
     async function handleStartButton() {
         const sentEmail = localStorage.getItem('verificationEmailSent');
-        const sentTime = localStorage.getItem('verificationSentTime');
+        const storedEndTime = localStorage.getItem('verificationEndTime');  // 변수명 변경
 
-        if (sentEmail && sentTime) {
+        if (sentEmail && storedEndTime) {  // endTime을 storedEndTime으로 변경
             const now = new Date().getTime();
-            const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+            const remaining = Math.max(0, Math.ceil((storedEndTime - now) / 1000));
 
             if (remaining > 0) {
                 currentEmail = sentEmail;
                 openModal('verificationModal');
-                startTimer(remaining);  // 남은 시간으로 타이머 재시작
+                startTimer(remaining);
                 return;
             } else {
                 clearVerificationState();
