@@ -6,6 +6,7 @@ import com.feedping.exception.GlobalException;
 import com.feedping.repository.MemberRepository;
 import com.feedping.util.EmailSender;
 import com.feedping.util.EmailVerificationManager;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +29,15 @@ public class EmailVerificationService {
     public void verifyEmail(String email, String code) {
         codeManager.validateCode(email, code);
 
-        Member member = Member.builder()
-                .email(email)
-                .build();
+        Optional<Member> optionalMember = memberRepository.findByEmail(email);
 
-        memberRepository.save(member);
-        authTokenService.createTokenForMember(member);
+        if (optionalMember.isEmpty()) {
+            Member newMember = Member.builder()
+                    .email(email)
+                    .build();
+            memberRepository.save(newMember);
+            authTokenService.createTokenForMember(newMember);
+        }
     }
 
 }
