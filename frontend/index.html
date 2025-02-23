@@ -287,8 +287,8 @@
 </div>
 
 <!-- Verification Modal -->
-<div id="verificationModal" class="modal-backdrop hidden" onclick="closeModal('verificationModal')">
-    <div class="modal animate__animated animate__fadeInDown" onclick="event.stopPropagation()">
+<div id="verificationModal" class="modal-backdrop hidden">
+    <div class="modal animate__animated animate__fadeInDown">
         <h2 class="text-2xl font-bold mb-6">이메일 인증</h2>
         <form id="verificationForm">
             <div class="mb-6">
@@ -302,11 +302,23 @@
                     <span id="timer" class="text-blue-500 font-mono"></span>
                 </div>
             </div>
-            <div class="flex space-x-4">
-                <button type="button" onclick="closeModal('verificationModal')"
-                        class="btn-secondary flex-1">취소
-                </button>
-                <button type="submit" class="btn-primary flex-1">확인</button>
+            <!-- 버튼 그룹 추가 -->
+            <div class="space-y-3">
+                <div class="flex space-x-4">
+                    <button type="button" onclick="closeModal('verificationModal')"
+                            class="btn-secondary flex-1">취소</button>
+                    <button type="submit" class="btn-primary flex-1">확인</button>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="button" onclick="resendVerificationCode()"
+                            class="text-blue-600 hover:text-blue-800 text-sm flex-1">
+                        인증 코드 재전송
+                    </button>
+                    <button type="button" onclick="tryDifferentEmail()"
+                            class="text-blue-600 hover:text-blue-800 text-sm flex-1">
+                        다른 이메일로 시도
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -509,6 +521,53 @@
         localStorage.removeItem('verificationEmailSent');
         localStorage.removeItem('verificationSentTime');
         localStorage.removeItem('verificationEndTime');
+    }
+
+    // 인증 코드 재전송
+    async function resendVerificationCode() {
+        const email = currentEmail;
+        const submitButton = document.querySelector('#verificationForm button[type="submit"]');
+        const errorDiv = document.getElementById('verificationError');
+
+        try {
+            submitButton.disabled = true;
+            errorDiv.classList.add('hidden');
+
+            const response = await fetch(window.APP_CONFIG.api.baseUrl + window.APP_CONFIG.api.endpoints.emailVerification.send, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // 타이머 리셋
+                startTimer(300);
+                alert('인증 코드가 재전송되었습니다.');
+            } else {
+                errorDiv.textContent = data.message || '인증 코드 재전송에 실패했습니다.';
+                errorDiv.classList.remove('hidden');
+            }
+        } catch (error) {
+            errorDiv.textContent = '서버 오류가 발생했습니다.';
+            errorDiv.classList.remove('hidden');
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    // 다른 이메일로 시도
+    function tryDifferentEmail() {
+        // 현재 인증 상태 초기화
+        clearVerificationState();
+        clearInterval(timerInterval);
+
+        // 이메일 입력 모달로 전환
+        closeModal('verificationModal');
+        openModal('emailModal');
     }
 
     // 시작하기 버튼에 핸들러 연결
