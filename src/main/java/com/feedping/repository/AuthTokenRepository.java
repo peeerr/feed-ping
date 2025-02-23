@@ -11,4 +11,6 @@ public interface AuthTokenRepository extends JpaRepository<AuthToken, Long> {
 
     boolean existsByMember(Member member);
 
+    Optional<AuthToken> findByMember(Member member);
+
 }

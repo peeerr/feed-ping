@@ -9,7 +9,6 @@ import com.feedping.dto.request.RssUnsubscribeRequest;
 import com.feedping.dto.response.RssSubscriptionPageResponse;
 import com.feedping.exception.ErrorCode;
 import com.feedping.exception.GlobalException;
-import com.feedping.repository.AuthTokenRepository;
 import com.feedping.repository.MemberRepository;
 import com.feedping.repository.RssFeedRepository;
 import com.feedping.repository.SubscriptionRepository;
@@ -26,7 +25,7 @@ public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final RssFeedRepository rssFeedRepository;
-    private final AuthTokenRepository tokenRepository;
+    private final AuthTokenService authTokenService;
     private final MemberRepository memberRepository;
 
     @Transactional
@@ -41,7 +40,7 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public RssSubscriptionPageResponse getSubscriptionsByEmail(String token, Pageable pageable) {
-        Member member = getMemberByToken(token);
+        Member member = authTokenService.validateAndGetMember(token);
         Page<Subscription> subscriptions = subscriptionRepository.findByMember(member, pageable);
         return RssSubscriptionPageResponse.of(subscriptions);
     }
@@ -50,13 +49,13 @@ public class SubscriptionService {
         String token = request.getToken();
         String rssUrl = request.getRssUrl();
         String siteName = request.getSiteName();
-        Member member = getMemberByToken(token);
+        Member member = authTokenService.validateAndGetMember(token);
 
         subscribe(member, rssUrl, siteName);
     }
 
     public void unsubscribeRssWithToken(Long rssId, RssUnsubscribeRequest request) {
-        Member member = getMemberByToken(request.getToken());
+        Member member = authTokenService.validateAndGetMember(request.getToken());
         RssFeed rssFeed = getRssFeed(rssId);
 
         Subscription subscription = subscriptionRepository.findByMemberAndRssFeed(member, rssFeed)
@@ -91,12 +90,6 @@ public class SubscriptionService {
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new GlobalException(ErrorCode.NOT_FOUND_MEMBER));
-    }
-
-    private Member getMemberByToken(String token) {
-        return tokenRepository.findByToken(token)
-                .orElseThrow(() -> new GlobalException(ErrorCode.INVALID_TOKEN))
-                .getMember();
     }
 
     private RssFeed getRssFeed(Long rssId) {
