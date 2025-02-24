@@ -271,6 +271,30 @@
     </div>
 </div>
 
+<!-- Confirm Modal -->
+<div id="confirmModal" class="modal-backdrop hidden">
+    <div class="modal animate__animated animate__fadeInDown">
+        <div class="text-center">
+            <div class="mb-4 text-yellow-500">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">구독 해지 확인</h2>
+            <p class="text-gray-600 mb-6">정말 구독을 해지하시겠습니까?</p>
+            <div class="flex space-x-4">
+                <button onclick="closeModal('confirmModal')" class="btn-secondary flex-1">
+                    취소
+                </button>
+                <button id="confirmAction" class="btn-danger flex-1">
+                    해지
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // 모달 제어
     function openModal(modalId) {
@@ -313,7 +337,7 @@
     async function validateToken() {
         const token = new URLSearchParams(window.location.search).get('token');
         if (!token) {
-            openModal('invalidTokenModal');
+            showModal('invalidTokenModal', '유효하지 않은 접근', '토큰이 존재하지 않습니다.');
             return false;
         }
 
@@ -327,7 +351,7 @@
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    openModal('invalidTokenModal');
+                    showModal('invalidTokenModal', '유효하지 않은 접근', '유효하지 않은 토큰입니다.');
                 } else {
                     const data = await response.json();
                     showModal('errorModal', '토큰 검증 실패', data.message || '토큰 검증에 실패했습니다.');
@@ -338,7 +362,7 @@
             return true;
         } catch (error) {
             console.error('Token validation failed:', error);
-            openModal('invalidTokenModal');
+            showModal('errorModal', '서버 오류', '토큰 검증 중 오류가 발생했습니다.');
             return false;
         }
     }
@@ -357,7 +381,6 @@
     // 서비스 정보 주입
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.service-name').textContent = window.APP_CONFIG.service.name;
-        loadSubscriptions();
     });
 
     // 구독 목록 로드
@@ -366,7 +389,6 @@
         const emptyState = document.getElementById('emptyState');
         const loadingState = document.getElementById('loadingState');
         const totalCount = document.getElementById('totalCount');
-        const token = new URLSearchParams(window.location.search).get('token');
 
         try {
             listContainer.classList.add('hidden');
@@ -384,6 +406,7 @@
             totalCount.textContent = `총 ${data.data.totalCount}개`;
 
             if (subscriptions.length === 0) {
+                listContainer.classList.add('hidden');  // 리스트 컨테이너 명시적으로 숨김
                 emptyState.classList.remove('hidden');
                 return;
             }
@@ -474,40 +497,55 @@
 
     // 구독 해지
     async function unsubscribe(rssId) {
-        if (!confirm('정말 구독을 해지하시겠습니까?')) {
-            return;
-        }
+        // 확인 모달의 액션 버튼에 이벤트 리스너 설정
+        const confirmButton = document.getElementById('confirmAction');
+        const originalOnClick = confirmButton.onclick;  // 기존 이벤트 리스너 저장
 
-        try {
-            const response = await fetch(
-                `${window.APP_CONFIG.api.baseUrl}${window.APP_CONFIG.api.endpoints.subscriptions.delete(rssId)}`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({token})
+        // 새로운 이벤트 리스너 설정
+        confirmButton.onclick = async () => {
+            try {
+                const response = await fetch(
+                    `${window.APP_CONFIG.api.baseUrl}${window.APP_CONFIG.api.endpoints.subscriptions.delete(rssId)}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({token})
+                    }
+                );
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || '구독 해지에 실패했습니다.');
                 }
-            );
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || '구독 해지에 실패했습니다.');
+                const element = document.getElementById(`subscription-${rssId}`);
+                element.classList.add('animate__animated', 'animate__fadeOut');
+
+                setTimeout(() => {
+                    element.remove();
+                    // 구독 목록이 비어있는지 확인하고 빈 상태 표시
+                    if (document.getElementById('subscriptionList').children.length === 0) {
+                        document.getElementById('subscriptionList').classList.add('hidden');
+                        document.getElementById('emptyState').classList.remove('hidden');
+                    }
+                    showModal('successModal', '구독 해지 완료', '선택하신 RSS 피드의 구독이 해지되었습니다.');
+                }, 500);
+
+            } catch (error) {
+                console.error('Unsubscribe failed:', error);
+                showModal('errorModal', '구독 해지 실패', error.message);
+            } finally {
+                // 확인 모달 닫기
+                closeModal('confirmModal');
+                // 이벤트 리스너 원복
+                confirmButton.onclick = originalOnClick;
             }
+        };
 
-            const element = document.getElementById(`subscription-${rssId}`);
-            element.classList.add('animate__animated', 'animate__fadeOut');
-            setTimeout(() => {
-                element.remove();
-                if (document.getElementById('subscriptionList').children.length === 0) {
-                    document.getElementById('emptyState').classList.remove('hidden');
-                }
-                loadSubscriptions();
-                showModal('successModal', '구독 해지 완료', '선택하신 RSS 피드의 구독이 해지되었습니다.');
-            }, 500);
-        } catch (error) {
-            showModal('errorModal', '구독 해지 실패', error.message);
-        }
+        // 확인 모달 표시
+        openModal('confirmModal');
     }
 
     // 검색 기능
