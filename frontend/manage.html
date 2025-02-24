@@ -86,6 +86,41 @@
             opacity: 0;
             transition: opacity 0.2s;
         }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 기본적으로 숨김 상태여야 함 */
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-backdrop.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 1.5rem;
+            z-index: 50;
+            width: 100%;
+            max-width: 28rem;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-backdrop.visible .modal {
+            transform: scale(1);
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -274,11 +309,42 @@
         openModal(modalId);
     }
 
-    // 토큰 체크
-    const token = new URLSearchParams(window.location.search).get('token');
-    if (!token) {
-        openModal('invalidTokenModal');
+    // 페이지 로드 시 토큰 검증
+    async function validateToken() {
+        const token = new URLSearchParams(window.location.search).get('token');
+        if (!token) {
+            openModal('invalidTokenModal');
+            return false;
+        }
+
+        try {
+            const response = await fetch(`${window.APP_CONFIG.api.baseUrl}/token/validate?token=${token}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                openModal('invalidTokenModal');
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Token validation failed:', error);
+            openModal('invalidTokenModal');
+            return false;
+        }
     }
+
+    // 페이지 로드 시 실행 (토큰 검사)
+    document.addEventListener('DOMContentLoaded', async () => {
+        const isValid = await validateToken();
+        if (isValid) {
+            await loadSubscriptions();
+        }
+    });
 
     // 서비스 정보 주입
     document.addEventListener('DOMContentLoaded', () => {
