@@ -60,7 +60,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           source: "backend/build/libs/*.jar,backend/Dockerfile,backend/docker-compose.yml"
           target: "/home/ubuntu/app"
-          strip_components: 1
+          strip_components: 3
           
       - name: 도커 컨테이너 실행
         uses: appleboy/ssh-action@v1.0.3
