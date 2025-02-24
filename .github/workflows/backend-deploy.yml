@@ -72,6 +72,6 @@ jobs:
           script: |
             cd ~/app
             mv build/libs/*.jar app.jar
-            rm -rf build/libs
+            rm -rf build
             docker-compose down || true
             docker-compose up --build -d
