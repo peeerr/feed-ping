@@ -446,32 +446,44 @@
         const rssUrlError = document.getElementById('rssUrlError');
         const siteNameError = document.getElementById('siteNameError');
 
+        // 버튼 비활성화 & 로딩 표시
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="animate-spin">⌛</span> 처리중...';
+
+        // 기존 에러메시지 숨기기
         rssUrlError.classList.add('hidden');
         siteNameError.classList.add('hidden');
 
         try {
-            const response = await fetch(window.APP_CONFIG.api.baseUrl + window.APP_CONFIG.api.endpoints.subscriptions.manage, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    token,
-                    rssUrl,
-                    siteName
-                })
-            });
+            const response = await fetch(
+                window.APP_CONFIG.api.baseUrl + window.APP_CONFIG.api.endpoints.subscriptions.manage,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token,
+                        rssUrl,
+                        siteName
+                    })
+                }
+            );
 
             const data = await response.json();
 
             if (response.ok) {
+                // 추가 성공
                 e.target.reset();
                 await loadSubscriptions();
                 showModal('successModal', 'RSS 피드 추가 완료', '새로운 RSS 피드가 추가되었습니다.');
             } else {
-                if (data.validation) {
+                // 여기서 상태 코드별 분기 처리
+                if (response.status === 409) {
+                    // 이미 등록된 RSS 피드 (중복)
+                    showModal('errorModal', 'RSS 피드 추가 실패', '이미 구독 중인 RSS 피드입니다.');
+                } else if (data.validation) {
+                    // 유효성 검증 에러
                     Object.entries(data.validation).forEach(([field, message]) => {
                         const errorDiv = document.getElementById(`${field}Error`);
                         if (errorDiv) {
@@ -480,12 +492,15 @@
                         }
                     });
                 } else {
+                    // 그 외 일반 에러
                     showModal('errorModal', 'RSS 피드 추가 실패', data.message || '구독 추가에 실패했습니다.');
                 }
             }
         } catch (error) {
+            // 네트워크 등 서버 오류
             showModal('errorModal', '서버 오류', '서버 오류가 발생했습니다.');
         } finally {
+            // 버튼 상태 복구
             submitButton.disabled = false;
             submitButton.innerHTML = `
             <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
