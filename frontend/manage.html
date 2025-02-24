@@ -179,12 +179,80 @@
     </div>
 </main>
 
+<!-- Success Modal -->
+<div id="successModal" class="modal-backdrop hidden">
+    <div class="modal animate__animated animate__fadeInDown">
+        <div class="text-center">
+            <div class="mb-4 text-green-500">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-4" id="successTitle">완료되었습니다</h2>
+            <p class="text-gray-600 mb-6" id="successMessage">처리가 완료되었습니다.</p>
+            <button onclick="closeModal('successModal')" class="btn-primary w-full">
+                확인
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="modal-backdrop hidden">
+    <div class="modal animate__animated animate__fadeInDown">
+        <div class="text-center">
+            <div class="mb-4 text-red-500">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-4" id="errorTitle">오류가 발생했습니다</h2>
+            <p class="text-gray-600 mb-6" id="errorMessage">처리 중 문제가 발생했습니다.</p>
+            <button onclick="closeModal('errorModal')" class="btn-primary w-full">
+                확인
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Invalid Token Modal -->
+<div id="invalidTokenModal" class="modal-backdrop hidden">
+    <div class="modal animate__animated animate__fadeInDown">
+        <div class="text-center">
+            <div class="mb-4 text-red-500">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">유효하지 않은 접근</h2>
+            <p class="text-gray-600 mb-6">유효하지 않은 토큰입니다.</p>
+            <button onclick="location.href='/'" class="btn-primary w-full">
+                메인으로 이동
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // 모달 표시 함수
+    function showModal(modalId, title, message) {
+        if (modalId === 'successModal') {
+            if (title) document.getElementById('successTitle').textContent = title;
+            if (message) document.getElementById('successMessage').textContent = message;
+        } else if (modalId === 'errorModal') {
+            if (title) document.getElementById('errorTitle').textContent = title;
+            if (message) document.getElementById('errorMessage').textContent = message;
+        }
+        openModal(modalId);
+    }
+
     // 토큰 체크
     const token = new URLSearchParams(window.location.search).get('token');
     if (!token) {
-        alert('유효하지 않은 접근입니다.');
-        window.location.href = '/';
+        openModal('invalidTokenModal');
     }
 
     // 서비스 정보 주입
@@ -221,23 +289,23 @@
             }
 
             listContainer.innerHTML = subscriptions.map(sub => `
-                    <div id="subscription-${sub.id}" class="subscription-item group">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-semibold text-lg">${escapeHtml(sub.siteName)}</h3>
-                                <p class="text-gray-500 text-sm break-all">${escapeHtml(sub.rssUrl)}</p>
-                            </div>
-                            <button onclick="unsubscribe(${sub.id})"
-                                    class="btn-danger opacity-0 group-hover:opacity-100 transition-opacity">
-                                구독 해지
-                            </button>
-                        </div>
+            <div id="subscription-${sub.id}" class="subscription-item group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-semibold text-lg">${escapeHtml(sub.siteName)}</h3>
+                        <p class="text-gray-500 text-sm break-all">${escapeHtml(sub.rssUrl)}</p>
                     </div>
-                `).join('');
+                    <button onclick="unsubscribe(${sub.id})"
+                            class="btn-danger opacity-0 group-hover:opacity-100 transition-opacity">
+                        구독 해지
+                    </button>
+                </div>
+            </div>
+        `).join('');
 
             listContainer.classList.remove('hidden');
         } catch (error) {
-            alert(error.message);
+            showModal('errorModal', '구독 목록 로드 실패', error.message);
         } finally {
             loadingState.classList.add('hidden');
         }
@@ -248,7 +316,7 @@
         e.preventDefault();
         const rssUrl = document.getElementById('rssUrl').value;
         const siteName = document.getElementById('siteName').value;
-        const submitButton = e.target.querySelector('button');
+        const submitButton = e.target.querySelector('button[type="submit"]');
         const rssUrlError = document.getElementById('rssUrlError');
         const siteNameError = document.getElementById('siteNameError');
 
@@ -273,9 +341,9 @@
             const data = await response.json();
 
             if (response.ok) {
-                alert('새로운 RSS 피드가 추가되었습니다.');
                 e.target.reset();
                 loadSubscriptions();
+                showModal('successModal', 'RSS 피드 추가 완료', '새로운 RSS 피드가 추가되었습니다.');
             } else {
                 if (data.validation) {
                     Object.entries(data.validation).forEach(([field, message]) => {
@@ -286,22 +354,20 @@
                         }
                     });
                 } else {
-                    rssUrlError.textContent = data.message || '구독 추가에 실패했습니다.';
-                    rssUrlError.classList.remove('hidden');
+                    showModal('errorModal', 'RSS 피드 추가 실패', data.message || '구독 추가에 실패했습니다.');
                 }
             }
         } catch (error) {
-            rssUrlError.textContent = '서버 오류가 발생했습니다.';
-            rssUrlError.classList.remove('hidden');
+            showModal('errorModal', '서버 오류', '서버 오류가 발생했습니다.');
         } finally {
             submitButton.disabled = false;
             submitButton.innerHTML = `
-                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    RSS 피드 추가
-                `;
+            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            RSS 피드 추가
+        `;
         }
     });
 
@@ -335,10 +401,11 @@
                 if (document.getElementById('subscriptionList').children.length === 0) {
                     document.getElementById('emptyState').classList.remove('hidden');
                 }
-                loadSubscriptions(); // 총 개수 업데이트를 위해 재로드
+                loadSubscriptions();
+                showModal('successModal', '구독 해지 완료', '선택하신 RSS 피드의 구독이 해지되었습니다.');
             }, 500);
         } catch (error) {
-            alert(error.message);
+            showModal('errorModal', '구독 해지 실패', error.message);
         }
     }
 
