@@ -60,7 +60,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           source: "backend/build/libs/backend-0.0.1-SNAPSHOT.jar,backend/Dockerfile,backend/docker-compose.yml"
           target: "/home/ubuntu/app"
-          strip_components: 3
+          strip_components: 1
 
       - name: 도커 컨테이너 실행
         uses: appleboy/ssh-action@v1.0.3
@@ -71,7 +71,7 @@ jobs:
           script_stop: true
           script: |
             cd ~/app
-            mv backend-0.0.1-SNAPSHOT.jar app.jar
+            mv build/libs/*.jar app.jar
+            rm -rf build/libs
             docker-compose down || true
             docker-compose up --build -d
-
