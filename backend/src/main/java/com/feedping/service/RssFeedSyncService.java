@@ -34,7 +34,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 @Service
 public class RssFeedSyncService {
 
@@ -58,7 +58,6 @@ public class RssFeedSyncService {
         }
     }
 
-    @Transactional
     public void syncFeed(RssFeed rssFeed) {
         List<RssItemDto> newEntries = fetchAndParseRssFeed(rssFeed.getUrl());
         List<RssItem> newItems = new ArrayList<>();
@@ -84,7 +83,6 @@ public class RssFeedSyncService {
         }
     }
 
-    @Transactional
     protected void processNewItems(RssFeed rssFeed, List<RssItem> newItems) {
         List<Subscription> subscriptions = subscriptionRepository.findByRssFeed(rssFeed);
         Map<Member, List<RssItem>> notificationMap = createNotificationMap(subscriptions, newItems);
