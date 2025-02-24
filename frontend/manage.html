@@ -333,9 +333,11 @@
         openModal(modalId);
     }
 
+    // 페이지 로드 시 URL에서 token 값을 추출하여 전역 변수로 선언
+    const token = new URLSearchParams(window.location.search).get('token');
+
     // 페이지 로드 시 토큰 검증
     async function validateToken() {
-        const token = new URLSearchParams(window.location.search).get('token');
         if (!token) {
             showModal('invalidTokenModal', '유효하지 않은 접근', '토큰이 존재하지 않습니다.');
             return false;
@@ -466,7 +468,7 @@
 
             if (response.ok) {
                 e.target.reset();
-                loadSubscriptions();
+                await loadSubscriptions();
                 showModal('successModal', 'RSS 피드 추가 완료', '새로운 RSS 피드가 추가되었습니다.');
             } else {
                 if (data.validation) {

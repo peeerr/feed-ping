@@ -475,8 +475,13 @@
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
+
+        // 인증 모달일 경우 입력 필드 초기화
+        if (modalId === 'verificationModal') {
+            document.getElementById('verificationCode').value = '';
+        }
+
         modal.classList.remove('visible');
-        // 애니메이션 완료 후 hidden 클래스 추가
         setTimeout(() => {
             modal.classList.add('hidden');
         }, 300);
