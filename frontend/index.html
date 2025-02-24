@@ -716,9 +716,10 @@
             const data = await response.json();
 
             if (response.ok) {
-                // 인증 성공시 이메일 저장
+                // 인증 성공시 이메일 저장 및 타이머 상태 초기화
                 localStorage.setItem('lastVerifiedEmail', currentEmail);
                 clearInterval(timerInterval);
+                clearVerificationState(); // 타이머 관련 localStorage 항목 제거
                 closeModal('verificationModal');
                 openModal('rssModal');
             } else {
