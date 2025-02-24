@@ -67,12 +67,12 @@ public class SubscriptionController {
                 .body(ApiResponse.of(HttpStatus.CREATED.value()));
     }
 
-    @DeleteMapping("/manage/{rssId}")
+    @DeleteMapping("/manage/{subId}")
     public ResponseEntity<ApiResponse<Void>> unsubscribeRssFromEmail(
-            @PathVariable Long rssId,
+            @PathVariable Long subId,
             @RequestBody @Valid RssUnsubscribeRequest request
     ) {
-        subscriptionService.unsubscribeRssWithToken(rssId, request);
+        subscriptionService.unsubscribeRssWithToken(subId, request);
         return ResponseEntity.ok()
                 .body(ApiResponse.of(HttpStatus.OK.value()));
     }

@@ -54,11 +54,10 @@ public class SubscriptionService {
         subscribe(member, rssUrl, siteName);
     }
 
-    public void unsubscribeRssWithToken(Long rssId, RssUnsubscribeRequest request) {
-        Member member = authTokenService.validateAndGetMember(request.getToken());
-        RssFeed rssFeed = getRssFeed(rssId);
+    public void unsubscribeRssWithToken(Long subId, RssUnsubscribeRequest request) {
+        authTokenService.validateAndGetMember(request.getToken());
 
-        Subscription subscription = subscriptionRepository.findByMemberAndRssFeed(member, rssFeed)
+        Subscription subscription = subscriptionRepository.findById(subId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
         subscriptionRepository.delete(subscription);
@@ -90,11 +89,6 @@ public class SubscriptionService {
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new GlobalException(ErrorCode.NOT_FOUND_MEMBER));
-    }
-
-    private RssFeed getRssFeed(Long rssId) {
-        return rssFeedRepository.findById(rssId)
-                .orElseThrow(() -> new GlobalException(ErrorCode.NOT_FOUND_RSS_FEED));
     }
 
 }
