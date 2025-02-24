@@ -237,6 +237,31 @@
 </div>
 
 <script>
+    // 모달 제어
+    function openModal(modalId) {
+        // 다른 모달 모두 닫기
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+            modal.classList.remove('visible');
+            modal.classList.add('hidden');
+        });
+
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('hidden');
+        // 약간의 지연 후 visible 클래스 추가로 애니메이션 효과
+        setTimeout(() => {
+            modal.classList.add('visible');
+        }, 10);
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('visible');
+        // 애니메이션 완료 후 hidden 클래스 추가
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
     // 모달 표시 함수
     function showModal(modalId, title, message) {
         if (modalId === 'successModal') {
