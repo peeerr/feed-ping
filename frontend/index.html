@@ -477,7 +477,6 @@
     // 타이머 기능
     function startTimer(duration) {
         const timerDisplay = document.getElementById('timer');
-        // endTime을 새로 계산
         const endTime = new Date().getTime() + (duration * 1000);
 
         localStorage.setItem('verificationEndTime', endTime);
@@ -496,7 +495,11 @@
 
             if (remaining <= 0) {
                 clearInterval(timerInterval);
-                openModal('timeoutModal');
+                // 인증 코드 모달이 현재 보이는 상태일 때만 타임아웃 모달 표시
+                const verificationModal = document.getElementById('verificationModal');
+                if (verificationModal.classList.contains('visible')) {
+                    openModal('timeoutModal');
+                }
                 clearVerificationState();
             }
         }, 1000);
