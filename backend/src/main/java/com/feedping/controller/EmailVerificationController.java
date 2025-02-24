@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/email-verification")
+@RequestMapping("/email-verification")
 @RestController
 public class EmailVerificationController {
 

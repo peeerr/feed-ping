@@ -9,7 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
+        registry.addMapping("/**")
                 .allowedOrigins("https://feedping.co.kr", "http://feedping.co.kr")
                 .allowedMethods("GET", "POST", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

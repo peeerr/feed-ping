@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/subscriptions")
+@RequestMapping("/subscriptions")
 @RestController
 public class SubscriptionController {
 
