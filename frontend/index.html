@@ -519,17 +519,46 @@
                     openModal('rssModal');
                     return;
                 } else {
-                    // 서버 응답이 미인증이면 lastVerifiedEmail 제거 후 다음 단계로
+                    // 서버 응답이 미인증이면 모든 인증 관련 상태 초기화
                     localStorage.removeItem('lastVerifiedEmail');
+                    clearVerificationState();
+                    clearInterval(timerInterval);
+                    openModal('emailModal');
+                    return;
                 }
             } catch (error) {
                 console.error('인증 상태 확인 중 오류 발생:', error);
-                // 에러 발생 시 그냥 다음 단계로 넘어가서 새 인증 시작
+                // 에러 발생 시 모든 상태 초기화하고 새로 시작
+                localStorage.removeItem('lastVerifiedEmail');
+                clearVerificationState();
+                clearInterval(timerInterval);
+                openModal('emailModal');
+                return;
             }
         }
 
-        // 2) 인증 진행 중 상태(타이머) 확인
+        // 2) 진행 중인 인증이 있는지 확인 전에 서버의 인증 상태 먼저 확인
         const sentEmail = localStorage.getItem('verificationEmailSent');
+        if (sentEmail) {
+            try {
+                const response = await fetch(`${window.APP_CONFIG.api.baseUrl}/email-verification/status?email=${encodeURIComponent(sentEmail)}`);
+                const {data: isVerified} = await response.json();
+
+                if (isVerified) {
+                    // 이미 인증된 상태라면 모든 인증 관련 상태 초기화하고 RSS 모달
+                    localStorage.setItem('lastVerifiedEmail', sentEmail);
+                    clearVerificationState();
+                    clearInterval(timerInterval);
+                    currentEmail = sentEmail;
+                    openModal('rssModal');
+                    return;
+                }
+            } catch (error) {
+                console.error('인증 상태 확인 중 오류 발생:', error);
+            }
+        }
+
+        // 3) 진행 중인 인증 처리
         const storedEndTime = localStorage.getItem('verificationEndTime');
         if (sentEmail && storedEndTime) {
             const now = Date.now();
@@ -545,11 +574,12 @@
                 // 시간 초과 => 타임아웃 모달
                 clearInterval(timerInterval);
                 clearVerificationState();
+                openModal('timeoutModal');
                 return;
             }
         }
 
-        // 3) 여기까지 왔다면, 새로 인증을 시작해야 하므로 이메일 모달
+        // 4) 여기까지 왔다면, 새로 인증을 시작
         openModal('emailModal');
     }
 
