@@ -350,10 +350,7 @@
 
         // 토큰이 유효한 경우에만 구독 정보 로드
         if (isValid) {
-            // 약간의 지연을 두어 순차적인 처리가 더 명확하게 보이도록 함
-            setTimeout(async () => {
-                await loadSubscriptions();
-            }, 100);
+            await loadSubscriptions();
         }
     });
 
@@ -369,6 +366,7 @@
         const emptyState = document.getElementById('emptyState');
         const loadingState = document.getElementById('loadingState');
         const totalCount = document.getElementById('totalCount');
+        const token = new URLSearchParams(window.location.search).get('token');
 
         try {
             listContainer.classList.add('hidden');
