@@ -277,6 +277,11 @@
             const data = await response.json();
 
             if (!response.ok) {
+                // 401 Unauthorized인 경우 invalidTokenModal 표시
+                if (response.status === 401) {
+                    openModal('invalidTokenModal');
+                    return;
+                }
                 throw new Error(data.message || '구독 목록을 불러오는데 실패했습니다.');
             }
 
@@ -305,6 +310,7 @@
 
             listContainer.classList.remove('hidden');
         } catch (error) {
+            console.error('Error loading subscriptions:', error);
             showModal('errorModal', '구독 목록 로드 실패', error.message);
         } finally {
             loadingState.classList.add('hidden');
