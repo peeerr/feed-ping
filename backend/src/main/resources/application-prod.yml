@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  h2:
+    console:
+      enabled: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+app:
+  mail:
+    username: ${APP_MAIL_USERNAME}
+    sender-name: FeedPing
+    base-url: http://feedping.co.kr
+    template:
+      verification-subject: "[FeedPing] 이메일 인증을 완료해주세요"
