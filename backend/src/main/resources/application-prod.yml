@@ -30,6 +30,6 @@ app:
   mail:
     username: ${APP_MAIL_USERNAME}
     sender-name: FeedPing
-    base-url: http://feedping.co.kr
+    base-url: https://feedping.co.kr
     template:
       verification-subject: "[FeedPing] 이메일 인증을 완료해주세요"
