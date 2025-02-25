@@ -146,6 +146,7 @@ public class RssFeedSyncService {
                 return feed.getEntries().stream()
                         .map(RssItemDto::from)
                         .filter(this::isValidRssItem)
+                        .limit(20)
                         .toList();
             }
         } catch (Exception e) {

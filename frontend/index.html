@@ -230,7 +230,7 @@
     <div class="max-w-6xl mx-auto px-4 text-center">
         <p class="text-blue-600">
             <span class="font-semibold text-blue-700">FeedPing의 스마트 필터링:</span>
-            새 글만 알려드립니다! 사이트에서 인기글이 재발행되어도 중복 알림은 보내지 않아요.
+            새로운 글만 깔끔하게 알려드려요! 같은 글이 여러 번 올라와도 중복 알림을 보내지 않아요.
         </p>
     </div>
 </div>
@@ -637,6 +637,25 @@
     </div>
 </div>
 
+<!-- Error Modal -->
+<div id="errorModal" class="modal-backdrop hidden">
+    <div class="modal animate__animated animate__fadeInDown">
+        <div class="text-center">
+            <div class="mb-4 text-red-500">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-4" id="errorTitle">오류가 발생했습니다</h2>
+            <p class="text-gray-600 mb-6" id="errorMessage">처리 중 문제가 발생했습니다.</p>
+            <button onclick="closeModal('errorModal')" class="btn-primary w-full">
+                확인
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <footer class="bg-gray-800 text-white py-12">
     <div class="max-w-6xl mx-auto px-4">
@@ -706,6 +725,18 @@
         setTimeout(() => {
             modal.classList.add('hidden');
         }, 300);
+    }
+
+    // 모달 표시 함수
+    function showModal(modalId, title, message) {
+        if (modalId === 'successModal') {
+            if (title) document.getElementById('successTitle').textContent = title;
+            if (message) document.getElementById('successMessage').textContent = message;
+        } else if (modalId === 'errorModal') {
+            if (title) document.getElementById('errorTitle').textContent = title;
+            if (message) document.getElementById('errorMessage').textContent = message;
+        }
+        openModal(modalId);
     }
 
     // 인기 RSS 피드 클릭 핸들러
@@ -1073,11 +1104,13 @@
                 openModal('successModal');
                 e.target.reset();
             } else {
-                if (data.validation) {
+                if (response.status === 409) {
+                    showModal('errorModal', 'RSS 피드 추가 실패', '이미 구독 중인 RSS 피드입니다.');
+                } else if (data.validation) {
                     Object.entries(data.validation).forEach(([field, message]) => {
                         const errorDiv = document.getElementById(`${field}Error`);
                         if (errorDiv) {
-                            errorDiv.textContent = message;
+                            errorDiv.textContent = String(message);
                             errorDiv.classList.remove('hidden');
                         }
                     });
