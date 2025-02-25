@@ -63,7 +63,7 @@ public class EmailSender {
         String content = templateEngine.process("mail/rss-notification", context);
 
         sendMail(to,
-                String.format("[FeedPing] %s의 새 글이 등록되었습니다.", siteName),
+                String.format("[FeedPing] %s에 새 글이 등록되었습니다.", siteName),
                 content);
     }
 
