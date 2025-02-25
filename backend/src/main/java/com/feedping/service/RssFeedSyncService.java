@@ -17,7 +17,6 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,27 +58,23 @@ public class RssFeedSyncService {
     }
 
     public void syncFeed(RssFeed rssFeed) {
-        List<RssItemDto> newEntries = fetchAndParseRssFeed(rssFeed.getUrl());
-        List<RssItem> newItems = new ArrayList<>();
+        List<RssItemDto> fetchedEntries = fetchAndParseRssFeed(rssFeed.getUrl());
 
-        for (RssItemDto entry : newEntries) {
-            if (rssItemRepository.existsByLink(entry.getLink())) {
-                continue;
-            }
+        List<RssItem> itemsForNotification = fetchedEntries.stream()
+                .map(entry -> rssItemRepository.findByLink(entry.getLink())
+                        .orElseGet(() -> rssItemRepository.save(
+                                RssItem.builder()
+                                        .rssFeed(rssFeed)
+                                        .link(entry.getLink())
+                                        .title(entry.getTitle())
+                                        .description(entry.getDescription())
+                                        .publishedAt(entry.getPublishedAt())
+                                        .build()
+                        )))
+                .toList();
 
-            RssItem rssItem = RssItem.builder()
-                    .rssFeed(rssFeed)
-                    .link(entry.getLink())
-                    .title(entry.getTitle())
-                    .description(entry.getDescription())
-                    .publishedAt(entry.getPublishedAt())
-                    .build();
-
-            newItems.add(rssItemRepository.save(rssItem));
-        }
-
-        if (!newItems.isEmpty()) {
-            processNewItems(rssFeed, newItems);
+        if (!itemsForNotification.isEmpty()) {
+            processNewItems(rssFeed, itemsForNotification);
         }
     }
 
