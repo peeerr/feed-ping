@@ -26,7 +26,7 @@ public class RssItemDto {
                         .orElse(""),
                 Optional.ofNullable(entry.getPublishedDate())
                         .map(date -> date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
-                        .orElse(LocalDateTime.now())
+                        .orElse(null)
         );
     }
 
