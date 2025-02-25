@@ -747,11 +747,14 @@
             document.getElementById('rssUrl').value = rssUrl;
         };
 
-        // 인증된 이메일이 있는지 확인
-        const lastEmail = localStorage.getItem('lastVerifiedEmail');
+        // 인증 성공 후 RSS 정보 자동 입력을 위한 임시 저장
+        localStorage.setItem('pendingSiteName', siteName);
+        localStorage.setItem('pendingRssUrl', rssUrl);
 
-        // 이메일이 있고 아직 유효한지 서버에 확인
+        // 1. 인증된 이메일이 있는지 확인
+        const lastEmail = localStorage.getItem('lastVerifiedEmail');
         if (lastEmail) {
+            // 서버에 인증 여부 확인
             fetch(`${window.APP_CONFIG.api.baseUrl}/email-verification/status?email=${encodeURIComponent(lastEmail)}`)
                 .then(response => response.json())
                 .then(({data: isVerified}) => {
@@ -760,35 +763,43 @@
                         openModal('rssModal');
                         handleAfterAuth();
                     } else {
-                        // 유효하지 않으면 모든 상태 초기화
+                        // 유효하지 않으면 상태 초기화
                         localStorage.removeItem('lastVerifiedEmail');
                         clearVerificationState();
-                        // 이메일 입력부터 다시
                         openModal('emailModal');
-
-                        // 임시 저장
-                        localStorage.setItem('pendingSiteName', siteName);
-                        localStorage.setItem('pendingRssUrl', rssUrl);
                     }
                 })
                 .catch(() => {
-                    // 에러 발생시 안전하게 처리
                     localStorage.removeItem('lastVerifiedEmail');
                     clearVerificationState();
                     openModal('emailModal');
-
-                    // 임시 저장
-                    localStorage.setItem('pendingSiteName', siteName);
-                    localStorage.setItem('pendingRssUrl', rssUrl);
                 });
-        } else {
-            // 인증 메일 입력 모달 표시
-            openModal('emailModal');
-
-            // 인증 성공 후 RSS 정보 자동 입력을 위한 임시 저장
-            localStorage.setItem('pendingSiteName', siteName);
-            localStorage.setItem('pendingRssUrl', rssUrl);
+            return;
         }
+
+        // 2. 진행 중인 인증 절차가 있는지 확인
+        const sentEmail = localStorage.getItem('verificationEmailSent');
+        const storedEndTime = localStorage.getItem('verificationEndTime');
+
+        if (sentEmail && storedEndTime) {
+            const now = Date.now();
+            const remaining = Math.max(0, Math.ceil((storedEndTime - now) / 1000));
+
+            if (remaining > 0) {
+                // 아직 유효한 인증 시간이 남아있으면 인증 코드 입력 모달 표시
+                currentEmail = sentEmail;
+                openModal('verificationModal');
+                startTimer(remaining);
+                return;
+            } else {
+                // 만료된 경우 상태 초기화하고 이메일 입력으로
+                clearVerificationState();
+                clearInterval(timerInterval);
+            }
+        }
+
+        // 3. 새로 인증 시작
+        openModal('emailModal');
     }
 
     // 타이머 기능
