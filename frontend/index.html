@@ -179,6 +179,8 @@
             </div>
             <div class="hidden md:flex items-center space-x-6">
                 <a href="#features" class="text-gray-600 hover:text-blue-500 transition-colors">특징</a>
+                <a href="#popular-feeds" class="text-gray-600 hover:text-blue-500 transition-colors">인기 피드</a>
+                <a href="#rss-guide" class="text-gray-600 hover:text-blue-500 transition-colors">RSS 가이드</a>
                 <a href="#how-it-works" class="text-gray-600 hover:text-blue-500 transition-colors">이용방법</a>
                 <button onclick="openModal('emailModal')" class="btn-primary">시작하기</button>
             </div>
@@ -202,6 +204,16 @@
         </button>
     </div>
 </header>
+
+<!-- Notice Banner -->
+<div class="bg-blue-50 py-4">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <p class="text-blue-600">
+            <span class="font-semibold text-blue-700">FeedPing의 스마트 필터링:</span>
+            새 글만 알려드립니다! 사이트에서 인기글이 재발행되어도 중복 알림은 보내지 않아요.
+        </p>
+    </div>
+</div>
 
 <!-- Features Section -->
 <section id="features" class="py-20">
@@ -251,6 +263,49 @@
     </div>
 </section>
 
+<!-- RSS Guide Section -->
+<section id="rss-guide" class="py-20 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-16">RSS 가이드</h2>
+        <div class="grid md:grid-cols-2 gap-12">
+            <div class="card">
+                <h3 class="text-2xl font-semibold mb-4">RSS란 무엇인가요?</h3>
+                <p class="text-gray-600 mb-4">
+                    RSS(Rich Site Summary)는 웹사이트의 새로운 콘텐츠를 쉽게 받아볼 수 있는 기술입니다. 여러 사이트를 일일이 방문하지 않아도, RSS 리더를 통해 한곳에서 최신 글을 모아볼 수 있습니다.
+                </p>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-blue-700 font-medium">
+                        FeedPing은 RSS 피드를 이메일로 받아볼 수 있게 해주는 서비스입니다.
+                        여러 사이트의 업데이트를 일일이 확인할 필요 없이,
+                        새 글이 올라오면 자동으로 이메일을 받아보실 수 있습니다.
+                    </p>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="text-2xl font-semibold mb-4">RSS 주소 찾는 방법</h3>
+                <ol class="space-y-4 text-gray-600">
+                    <li class="flex">
+                        <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">1</span>
+                        <span>웹사이트 하단이나 사이드바에서 RSS, Feed 아이콘(주로 <span class="text-orange-500">🔸</span> 모양)을 찾아보세요.
+        일부 사이트는 <span class="text-blue-500">/rss</span> 또는 <span class="text-blue-500">/feed</span> 같은 주소를 사용하니, 직접 입력해보는 것도 방법입니다.</span>
+                    </li>
+                    <li class="flex">
+                        <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">2</span>
+                        <span>만약 RSS 피드가 없다면, <a href="https://createfeed.fivefilters.org/" class="text-blue-500 underline">FiveFilters</a> 같은 서비스를 이용해 직접 RSS 피드를 생성할 수 있습니다.</span>
+                    </li>
+                </ol>
+
+                <div class="mt-6">
+                    <p class="text-gray-700 font-medium">다음 인기 RSS 피드를 이용해보세요!</p>
+                    <a href="#popular-feeds" class="text-blue-600 hover:text-blue-800 font-semibold mt-2 inline-block">
+                        인기 RSS 피드 보기 →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- How it works -->
 <section id="how-it-works" class="py-20 bg-gray-100">
     <div class="max-w-6xl mx-auto px-4">
@@ -285,6 +340,89 @@
                     새 글이 올라오면<br>
                     이메일로 알려드립니다
                 </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular RSS Feeds Section -->
+<section id="popular-feeds" class="py-20">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-16">인기 RSS 피드</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- News Feed -->
+            <div class="card hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-2">뉴스 속보</h3>
+                <p class="text-gray-600 text-center mb-4">
+                    뉴스 속보를 빠르게 만나보세요!
+                </p>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center bg-gray-100 px-4 py-2 rounded cursor-pointer hover:bg-gray-200 transition" onclick="showPopularFeed('네이버 뉴스 속보', 'https://createfeed.fivefilters.org/extract.php?url=https%3A%2F%2Fsearch.naver.com%2Fsearch.naver%3Fwhere%3Dnexearch%26sm%3Dtop_hty%26fbm%3D0%26ie%3Dutf8%26query%3D%25EC%2586%258D%25EB%25B3%25B4&item=li.bx&item_title=a.news_tit+%40title&item_url=a.news_tit+%40href&item_desc=a.dsc_txt_wrap&item_image=img.thumb.api_get&unique_url=1&unique_title=1&max=5&order=document&guid=0')">
+                        <span class="text-gray-700 font-medium">네이버</span>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tech Blog Feeds -->
+            <div class="card hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-2">IT 기업들의 공식 기술 블로그</h3>
+                <p class="text-gray-600 text-center mb-4">
+                    기술 인사이트를 빠르게 만나보세요!
+                </p>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center bg-gray-100 px-4 py-2 rounded cursor-pointer hover:bg-gray-200 transition" onclick="showPopularFeed('카카오엔터프라이즈', 'https://tech.kakaoenterprise.com/feed')">
+                        <span class="text-gray-700 font-medium">카카오엔터프라이즈</span>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-100 px-4 py-2 rounded cursor-pointer hover:bg-gray-200 transition" onclick="showPopularFeed('당근', 'https://medium.com/feed/daangn')">
+                        <span class="text-gray-700 font-medium">당근</span>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-100 px-4 py-2 rounded cursor-pointer hover:bg-gray-200 transition" onclick="showPopularFeed('토스', 'https://toss.tech/rss.xml')">
+                        <span class="text-gray-700 font-medium">토스</span>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sports Feed -->
+            <div class="card hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-2">해외축구 인기 뉴스</h3>
+                <p class="text-gray-600 text-center mb-4">
+                    해외축구의 최신 소식을 확인해 보세요!
+                </p>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center bg-gray-100 px-4 py-2 rounded cursor-pointer hover:bg-gray-200 transition" onclick="showPopularFeed('네이버 해외축구 인기 뉴스', 'https://cdn.feedcontrol.net/8668/14342-Te3flYMKbDU7r.xml')">
+                        <span class="text-gray-700 font-medium">네이버</span>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -456,9 +594,10 @@
                 <h3 class="text-xl font-bold mb-4">바로가기</h3>
                 <ul class="space-y-2">
                     <li><a href="#features" class="text-gray-400 hover:text-white">특징</a></li>
+                    <li><a href="#popular-feeds" class="text-gray-400 hover:text-white">인기 피드</a></li>
+                    <li><a href="#rss-guide" class="text-gray-400 hover:text-white">RSS 가이드</a></li>
                     <li><a href="#how-it-works" class="text-gray-400 hover:text-white">이용방법</a></li>
-                    <li><a href="#" onclick="openModal('emailModal')" class="text-gray-400 hover:text-white">시작하기</a>
-                    </li>
+                    <li><a href="#" onclick="openModal('emailModal')" class="text-gray-400 hover:text-white">시작하기</a></li>
                 </ul>
             </div>
             <div>
@@ -510,6 +649,30 @@
         setTimeout(() => {
             modal.classList.add('hidden');
         }, 300);
+    }
+
+    // 인기 RSS 피드 클릭 핸들러
+    function showPopularFeed(siteName, rssUrl) {
+        // 이메일 인증 절차 후 처리할 함수
+        const handleAfterAuth = () => {
+            document.getElementById('siteName').value = siteName;
+            document.getElementById('rssUrl').value = rssUrl;
+        };
+
+        // 인증된 이메일이 있는지 확인
+        const lastEmail = localStorage.getItem('lastVerifiedEmail');
+        if (lastEmail) {
+            currentEmail = lastEmail;
+            openModal('rssModal');
+            handleAfterAuth();
+        } else {
+            // 인증 메일 입력 모달 표시
+            openModal('emailModal');
+
+            // 인증 성공 후 RSS 정보 자동 입력을 위한 임시 저장
+            localStorage.setItem('pendingSiteName', siteName);
+            localStorage.setItem('pendingRssUrl', rssUrl);
+        }
     }
 
     // 타이머 기능
@@ -793,6 +956,19 @@
                 clearVerificationState(); // 타이머 관련 localStorage 항목 제거
                 closeModal('verificationModal');
                 openModal('rssModal');
+
+                const pendingSiteName = localStorage.getItem('pendingSiteName');
+                const pendingRssUrl = localStorage.getItem('pendingRssUrl');
+
+                // 대기 중인 RSS 피드가 있다면 정보 자동 입력
+                if (pendingSiteName && pendingRssUrl) {
+                    document.getElementById('siteName').value = pendingSiteName;
+                    document.getElementById('rssUrl').value = pendingRssUrl;
+
+                    // 사용 후 임시 데이터 삭제
+                    localStorage.removeItem('pendingSiteName');
+                    localStorage.removeItem('pendingRssUrl');
+                }
             } else {
                 errorDiv.textContent = data.message || '인증에 실패했습니다.';
                 errorDiv.classList.remove('hidden');
