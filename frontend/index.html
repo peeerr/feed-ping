@@ -891,10 +891,10 @@
                 startTimer(remaining);
                 return;
             } else {
-                // 시간 초과 => 타임아웃 모달
+                // 시간 초과됐을 때는 그냥 이메일 입력 모달을 표시
                 clearInterval(timerInterval);
                 clearVerificationState();
-                openModal('timeoutModal');
+                openModal('emailModal');
                 return;
             }
         }
