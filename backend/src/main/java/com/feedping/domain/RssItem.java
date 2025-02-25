@@ -34,7 +34,6 @@ public class RssItem {
     @Column(nullable = false, length = 4096)
     private String description;
 
-    @Column(nullable = false)
     private LocalDateTime publishedAt;
 
     @Builder
