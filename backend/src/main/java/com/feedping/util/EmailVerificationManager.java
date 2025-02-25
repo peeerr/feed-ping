@@ -47,6 +47,11 @@ public class EmailVerificationManager {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
+    public void revokeVerification(String email) {
+        redisTemplate.delete(EMAIL_VERIFICATION_PREFIX + email);
+        redisTemplate.delete(VERIFIED_EMAIL_PREFIX + email);
+    }
+
     private String generateSecureCode() {
         byte[] randomBytes = new byte[32];
         secureRandom.nextBytes(randomBytes);

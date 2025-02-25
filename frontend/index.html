@@ -749,10 +749,38 @@
 
         // 인증된 이메일이 있는지 확인
         const lastEmail = localStorage.getItem('lastVerifiedEmail');
+
+        // 이메일이 있고 아직 유효한지 서버에 확인
         if (lastEmail) {
-            currentEmail = lastEmail;
-            openModal('rssModal');
-            handleAfterAuth();
+            fetch(`${window.APP_CONFIG.api.baseUrl}/email-verification/status?email=${encodeURIComponent(lastEmail)}`)
+                .then(response => response.json())
+                .then(({data: isVerified}) => {
+                    if (isVerified) {
+                        currentEmail = lastEmail;
+                        openModal('rssModal');
+                        handleAfterAuth();
+                    } else {
+                        // 유효하지 않으면 모든 상태 초기화
+                        localStorage.removeItem('lastVerifiedEmail');
+                        clearVerificationState();
+                        // 이메일 입력부터 다시
+                        openModal('emailModal');
+
+                        // 임시 저장
+                        localStorage.setItem('pendingSiteName', siteName);
+                        localStorage.setItem('pendingRssUrl', rssUrl);
+                    }
+                })
+                .catch(() => {
+                    // 에러 발생시 안전하게 처리
+                    localStorage.removeItem('lastVerifiedEmail');
+                    clearVerificationState();
+                    openModal('emailModal');
+
+                    // 임시 저장
+                    localStorage.setItem('pendingSiteName', siteName);
+                    localStorage.setItem('pendingRssUrl', rssUrl);
+                });
         } else {
             // 인증 메일 입력 모달 표시
             openModal('emailModal');
@@ -939,8 +967,31 @@
         clearVerificationState();
         clearInterval(timerInterval);
 
+        // 저장된 이메일 정보도 제거
+        localStorage.removeItem('lastVerifiedEmail');
+        currentEmail = '';
+        isEmailVerified = false;
+
+        // Redis의 인증 정보도 삭제 요청 (백엔드 API 호출)
+        const emailToRevoke = localStorage.getItem('verificationEmailSent');
+        if (emailToRevoke) {
+            fetch(`${window.APP_CONFIG.api.baseUrl}/email-verification/revoke`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: emailToRevoke })
+            }).catch(error => {
+                console.error('인증 정보 초기화 중 오류:', error);
+            });
+        }
+
+        // 모든 이메일 관련 로컬 스토리지 정보 제거
+        localStorage.removeItem('verificationEmailSent');
+
         // 이메일 입력 모달로 전환
         closeModal('verificationModal');
+        closeModal('rssModal'); // RSS 모달도 닫기
         openModal('emailModal');
     }
 
