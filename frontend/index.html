@@ -199,9 +199,9 @@
             </div>
             <div class="hidden md:flex items-center space-x-6">
                 <a href="#features" class="text-gray-600 hover:text-blue-500 transition-colors">특징</a>
+                <a href="#how-it-works" class="text-gray-600 hover:text-blue-500 transition-colors">이용방법</a>
                 <a href="#popular-feeds" class="text-gray-600 hover:text-blue-500 transition-colors">인기 피드</a>
                 <a href="#rss-guide" class="text-gray-600 hover:text-blue-500 transition-colors">RSS 가이드</a>
-                <a href="#how-it-works" class="text-gray-600 hover:text-blue-500 transition-colors">이용방법</a>
                 <button onclick="openModal('emailModal')" class="btn-primary">시작하기</button>
             </div>
         </div>
@@ -217,11 +217,25 @@
         <p class="text-xl md:text-2xl mb-10 opacity-90 animate__animated animate__fadeIn animate__delay-1s">
             관심있는 사이트의 새 소식을 놓치지 않고 이메일로 받아보세요
         </p>
-        <button onclick="openModal('emailModal')"
-                class="bg-white text-blue-600 font-bold py-4 px-8 rounded-lg
-                       hover:bg-blue-50 transition-colors animate__animated animate__fadeIn animate__delay-2s">
-            시작하기
-        </button>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 animate__animated animate__fadeIn animate__delay-2s">
+            <!-- 시작하기 버튼에 아이콘 추가 -->
+            <button onclick="openModal('emailModal')"
+                    class="inline-flex items-center bg-white text-blue-600 font-bold py-4 px-8 rounded-lg hover:bg-blue-50 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.5 5 7.5-5" />
+                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                </svg>
+                시작하기
+            </button>
+            <!-- 인기 RSS 피드 보기 버튼 -->
+            <a href="#popular-feeds"
+               class="inline-flex items-center justify-center border-2 border-white text-white font-bold py-4 px-8 rounded-lg hover:bg-white hover:bg-opacity-20 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                </svg>
+                인기 RSS 피드 보기
+            </a>
+        </div>
     </div>
 </header>
 
@@ -283,49 +297,6 @@
     </div>
 </section>
 
-<!-- RSS Guide Section -->
-<section id="rss-guide" class="py-20 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-4xl font-bold text-center mb-16">RSS 가이드</h2>
-        <div class="grid md:grid-cols-2 gap-12">
-            <div class="card">
-                <h3 class="text-2xl font-semibold mb-4">RSS란 무엇인가요?</h3>
-                <p class="text-gray-600 mb-4">
-                    RSS(Rich Site Summary)는 웹사이트의 새로운 콘텐츠를 쉽게 받아볼 수 있는 기술입니다. 여러 사이트를 일일이 방문하지 않아도, RSS 리더를 통해 한곳에서 최신 글을 모아볼 수 있습니다.
-                </p>
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <p class="text-blue-700 font-medium">
-                        FeedPing은 RSS 피드를 이메일로 받아볼 수 있게 해주는 서비스입니다.
-                        여러 사이트의 업데이트를 일일이 확인할 필요 없이,
-                        새 글이 올라오면 자동으로 이메일을 받아보실 수 있습니다.
-                    </p>
-                </div>
-            </div>
-            <div class="card">
-                <h3 class="text-2xl font-semibold mb-4">RSS 주소 찾는 방법</h3>
-                <ol class="space-y-4 text-gray-600">
-                    <li class="flex">
-                        <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">1</span>
-                        <span>웹사이트 하단이나 사이드바에서 RSS, Feed 아이콘(주로 <span class="text-orange-500">🔸</span> 모양)을 찾아보세요.
-        일부 사이트는 <span class="text-blue-500">/rss</span> 또는 <span class="text-blue-500">/feed</span> 같은 주소를 사용하니, 직접 입력해보는 것도 방법입니다.</span>
-                    </li>
-                    <li class="flex">
-                        <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">2</span>
-                        <span>만약 RSS 피드가 없다면, <a href="https://createfeed.fivefilters.org/" class="text-blue-500 underline">FiveFilters</a> 같은 서비스를 이용해 직접 RSS 피드를 생성할 수 있습니다.</span>
-                    </li>
-                </ol>
-
-                <div class="mt-6">
-                    <p class="text-gray-700 font-medium">다음 인기 RSS 피드를 이용해보세요!</p>
-                    <a href="#popular-feeds" class="text-blue-600 hover:text-blue-800 font-semibold mt-2 inline-block">
-                        인기 RSS 피드 보기 →
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- How it works -->
 <section id="how-it-works" class="py-20 bg-gray-100">
     <div class="max-w-6xl mx-auto px-4">
@@ -374,7 +345,8 @@
             <div class="card hover:shadow-lg transition-shadow duration-300">
                 <div class="flex items-center justify-center mb-4">
                     <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
                     </svg>
                 </div>
                 <h3 class="text-xl font-semibold text-center mb-2">뉴스 속보</h3>
@@ -386,13 +358,16 @@
                             class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
                             onclick="showPopularFeed('네이버 뉴스 속보', 'https://createfeed.fivefilters.org/extract.php?url=https%3A%2F%2Fsearch.naver.com%2Fsearch.naver%3Fwhere%3Dnexearch%26sm%3Dtop_hty%26fbm%3D0%26ie%3Dutf8%26query%3D%25EC%2586%258D%25EB%25B3%25B4&item=li.bx&item_title=a.news_tit+%40title&item_url=a.news_tit+%40href&item_desc=a.dsc_txt_wrap&item_image=img.thumb.api_get&unique_url=1&unique_title=1&max=5&order=document&guid=0')">
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <span>네이버</span>
                         </div>
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
                 </div>
@@ -402,7 +377,8 @@
             <div class="card hover:shadow-lg transition-shadow duration-300">
                 <div class="flex items-center justify-center mb-4">
                     <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                     </svg>
                 </div>
                 <h3 class="text-xl font-semibold text-center mb-2">IT 기업들의 공식 기술 블로그</h3>
@@ -414,27 +390,16 @@
                             class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
                             onclick="showPopularFeed('카카오엔터프라이즈 기술 블로그', 'https://tech.kakaoenterprise.com/feed')">
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                            <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                             </svg>
                             <span>카카오엔터프라이즈</span>
                         </div>
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </button>
-
-                    <button
-                            class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
-                            onclick="showPopularFeed('당근 기술 블로그', 'https://medium.com/feed/daangn')">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                            <span>당근</span>
-                        </div>
-                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
 
@@ -442,13 +407,38 @@
                             class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
                             onclick="showPopularFeed('토스 기술 블로그', 'https://toss.tech/rss.xml')">
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <span>토스</span>
                         </div>
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+
+                    <button
+                            class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
+                            onclick="showPopularFeed('당근 기술 블로그', 'https://medium.com/feed/daangn')">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                 viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 21s9.834 -3.489 12.684 -6.34a4.487 4.487 0 0 0 0 -6.344a4.483 4.483 0 0 0 -6.342 0c-2.86 2.861 -6.347 12.689 -6.347 12.689z"/>
+                                <path d="M9 13l-1.5 -1.5"/>
+                                <path d="M16 14l-2 -2"/>
+                                <path d="M22 8s-1.14 -2 -3 -2c-1.406 0 -3 2 -3 2s1.14 2 3 2s3 -2 3 -2z"/>
+                                <path d="M16 2s-2 1.14 -2 3s2 3 2 3s2 -1.577 2 -3c0 -1.86 -2 -3 -2 -3z"/>
+                            </svg>
+                            <span>당근</span>
+                        </div>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
                 </div>
@@ -458,27 +448,110 @@
             <div class="card hover:shadow-lg transition-shadow duration-300">
                 <div class="flex items-center justify-center mb-4">
                     <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-semibold text-center mb-2">해외축구 인기 뉴스</h3>
+                <h3 class="text-xl font-semibold text-center mb-2">축구 뉴스</h3>
                 <p class="text-gray-600 text-center mb-6">
-                    해외축구의 최신 소식을 확인해 보세요!
+                    축구 소식을 빠르게 만나보세요!
                 </p>
                 <div class="space-y-3 px-2">
                     <button
                             class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
-                            onclick="showPopularFeed('네이버 해외축구 인기 뉴스', 'https://cdn.feedcontrol.net/8668/14342-Te3flYMKbDU7r.xml')">
+                            onclick="showPopularFeed('전체 축구 뉴스 (스포츠경향)', 'https://sports.khan.co.kr/rss/soccer')">
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            <span>네이버</span>
+                            <span>전체 축구 뉴스 (스포츠경향)</span>
                         </div>
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
+
+                    <button
+                            class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
+                            onclick="showPopularFeed('해외축구 뉴스 (스포츠경향)', 'https://sports.khan.co.kr/rss/soccer_world-soccer')">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                            </svg>
+                            <span>해외축구 뉴스 (스포츠경향)</span>
+                        </div>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+
+                    <button
+                            class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
+                            onclick="showPopularFeed('국내축구 뉴스 (스포츠경향)', 'https://sports.khan.co.kr/rss/soccer_korea-soccer')">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+                            </svg>
+                            <span>국내축구 뉴스 (스포츠경향)</span>
+                        </div>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- RSS Guide Section -->
+<section id="rss-guide" class="py-20 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-16">RSS 가이드</h2>
+        <div class="grid md:grid-cols-2 gap-12">
+            <div class="card">
+                <h3 class="text-2xl font-semibold mb-4">RSS란 무엇인가요?</h3>
+                <p class="text-gray-600 mb-4">
+                    RSS(Rich Site Summary)는 웹사이트의 새로운 콘텐츠를 쉽게 받아볼 수 있는 기술입니다. 여러 사이트를 일일이 방문하지 않아도, RSS 리더를 통해 한곳에서 최신
+                    글을 모아볼 수 있습니다.
+                </p>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-blue-700 font-medium">
+                        FeedPing은 RSS 피드를 이메일로 받아볼 수 있게 해주는 서비스입니다.
+                        여러 사이트의 업데이트를 일일이 확인할 필요 없이,
+                        새 글이 올라오면 자동으로 이메일을 받아보실 수 있습니다.
+                    </p>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="text-2xl font-semibold mb-4">RSS 주소 찾는 방법</h3>
+                <ol class="space-y-4 text-gray-600">
+                    <li class="flex">
+                        <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">1</span>
+                        <span>웹사이트 하단이나 사이드바에서 RSS, Feed 아이콘(주로 <span class="text-orange-500">🔸</span> 모양)을 찾아보세요.
+        일부 사이트는 <span class="text-blue-500">/rss</span> 또는 <span class="text-blue-500">/feed</span> 같은 주소를 사용하니, 직접 입력해보는 것도 방법입니다.</span>
+                    </li>
+                    <li class="flex">
+                        <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">2</span>
+                        <span>만약 RSS 피드가 없다면, <a href="https://createfeed.fivefilters.org/"
+                                                 class="text-blue-500 underline">FiveFilters</a> 같은 서비스를 이용해 직접 RSS 피드를 생성할 수 있습니다.</span>
+                    </li>
+                </ol>
+
+                <div class="mt-6">
+                    <p class="text-gray-700 font-medium">다음 인기 RSS 피드를 이용해보세요!</p>
+                    <a href="#popular-feeds" class="text-blue-600 hover:text-blue-800 font-semibold mt-2 inline-block">
+                        인기 RSS 피드 보기 →
+                    </a>
                 </div>
             </div>
         </div>
@@ -669,11 +742,11 @@
             <div>
                 <h3 class="text-xl font-bold mb-4">바로가기</h3>
                 <ul class="space-y-2">
+                    <li><a href="#" onclick="openModal('emailModal')" class="text-gray-400 hover:text-white">시작하기</a></li>
                     <li><a href="#features" class="text-gray-400 hover:text-white">특징</a></li>
+                    <li><a href="#how-it-works" class="text-gray-400 hover:text-white">이용방법</a></li>
                     <li><a href="#popular-feeds" class="text-gray-400 hover:text-white">인기 피드</a></li>
                     <li><a href="#rss-guide" class="text-gray-400 hover:text-white">RSS 가이드</a></li>
-                    <li><a href="#how-it-works" class="text-gray-400 hover:text-white">이용방법</a></li>
-                    <li><a href="#" onclick="openModal('emailModal')" class="text-gray-400 hover:text-white">시작하기</a></li>
                 </ul>
             </div>
             <div>
@@ -991,7 +1064,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email: emailToRevoke })
+                body: JSON.stringify({email: emailToRevoke})
             }).catch(error => {
                 console.error('인증 정보 초기화 중 오류:', error);
             });
