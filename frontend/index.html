@@ -190,20 +190,40 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
+
 <!-- Navigation -->
 <nav class="bg-white shadow-sm sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 py-4">
-        <div class="flex justify-between items-center">
-            <div class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 service-name">
-                FeedPing
-            </div>
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#features" class="text-gray-600 hover:text-blue-500 transition-colors">특징</a>
-                <a href="#how-it-works" class="text-gray-600 hover:text-blue-500 transition-colors">이용방법</a>
-                <a href="#popular-feeds" class="text-gray-600 hover:text-blue-500 transition-colors">인기 피드</a>
-                <a href="#rss-guide" class="text-gray-600 hover:text-blue-500 transition-colors">RSS 가이드</a>
-                <button onclick="openModal('emailModal')" class="btn-primary">시작하기</button>
-            </div>
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <!-- 로고 영역 -->
+        <div class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 service-name">
+            FeedPing
+        </div>
+        <!-- 데스크탑 메뉴 (md 이상에서 보임) -->
+        <div class="hidden md:flex items-center space-x-6">
+            <a href="#features" class="text-gray-600 hover:text-blue-500 transition-colors">특징</a>
+            <a href="#how-it-works" class="text-gray-600 hover:text-blue-500 transition-colors">이용방법</a>
+            <a href="#popular-feeds" class="text-gray-600 hover:text-blue-500 transition-colors">인기 피드</a>
+            <a href="#rss-guide" class="text-gray-600 hover:text-blue-500 transition-colors">RSS 가이드</a>
+            <button onclick="openModal('emailModal')" class="btn-primary">시작하기</button>
+        </div>
+        <!-- 모바일 메뉴 버튼 (md 미만에서 보임) -->
+        <div class="md:hidden">
+            <button id="mobile-menu-button" class="text-gray-600 focus:outline-none">
+                <!-- 햄버거 아이콘 -->
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <!-- 모바일 메뉴 (기본적으로 숨김) -->
+    <div id="mobile-menu" class="hidden md:hidden">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="#features" class="block text-gray-600 hover:text-blue-500 transition-colors">특징</a>
+            <a href="#how-it-works" class="block text-gray-600 hover:text-blue-500 transition-colors">이용방법</a>
+            <a href="#popular-feeds" class="block text-gray-600 hover:text-blue-500 transition-colors">인기 피드</a>
+            <a href="#rss-guide" class="block text-gray-600 hover:text-blue-500 transition-colors">RSS 가이드</a>
+            <button onclick="openModal('emailModal')" class="w-full text-left btn-primary">시작하기</button>
         </div>
     </div>
 </nav>
@@ -222,8 +242,9 @@
             <button onclick="openModal('emailModal')"
                     class="inline-flex items-center bg-white text-blue-600 font-bold py-4 px-8 rounded-lg hover:bg-blue-50 transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.5 5 7.5-5" />
-                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.5 5 7.5-5"/>
+                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke-linecap="round"
+                          stroke-linejoin="round" stroke-width="2"/>
                 </svg>
                 시작하기
             </button>
@@ -231,7 +252,8 @@
             <a href="#popular-feeds"
                class="inline-flex items-center justify-center border-2 border-white text-white font-bold py-4 px-8 rounded-lg hover:bg-white hover:bg-opacity-20 transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
                 </svg>
                 인기 RSS 피드 보기
             </a>
@@ -742,7 +764,8 @@
             <div>
                 <h3 class="text-xl font-bold mb-4">바로가기</h3>
                 <ul class="space-y-2">
-                    <li><a href="#" onclick="openModal('emailModal')" class="text-gray-400 hover:text-white">시작하기</a></li>
+                    <li><a href="#" onclick="openModal('emailModal')" class="text-gray-400 hover:text-white">시작하기</a>
+                    </li>
                     <li><a href="#features" class="text-gray-400 hover:text-white">특징</a></li>
                     <li><a href="#how-it-works" class="text-gray-400 hover:text-white">이용방법</a></li>
                     <li><a href="#popular-feeds" class="text-gray-400 hover:text-white">인기 피드</a></li>
@@ -1078,6 +1101,12 @@
         closeModal('rssModal'); // RSS 모달도 닫기
         openModal('emailModal');
     }
+
+    // 모바일 메뉴 토글
+    document.getElementById("mobile-menu-button").addEventListener("click", function() {
+        var menu = document.getElementById("mobile-menu");
+        menu.classList.toggle("hidden");
+    });
 
     // 시작하기 버튼에 핸들러 연결
     document.querySelectorAll('[onclick="openModal(\'emailModal\')"]').forEach(button => {
