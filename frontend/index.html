@@ -1097,19 +1097,15 @@
         errorDiv.classList.add('hidden');
 
         try {
-            // 먼저 이메일이 인증된 상태인지 확인
-            const verifyResponse = await fetch(`${window.APP_CONFIG.api.baseUrl}/subscriptions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({email})
-            });
+            // 먼저 이메일이 이미 인증된 상태인지 확인
+            const verifyResponse = await fetch(`${window.APP_CONFIG.api.baseUrl}/email-verification/status?email=${encodeURIComponent(email)}`);
+            const verifyData = await verifyResponse.json();
 
-            if (verifyResponse.ok) {
+            if (verifyData.data === true) {
                 // 이미 인증된 이메일이면 바로 RSS 등록 모달로
                 isEmailVerified = true;
                 currentEmail = email;
+                localStorage.setItem('lastVerifiedEmail', email);
                 closeModal('emailModal');
                 openModal('rssModal');
             } else {
@@ -1131,8 +1127,22 @@
 
                     currentEmail = email;
                     closeModal('emailModal');
+
+                    // 비동기 처리로 인증 모달 바로 표시
                     openModal('verificationModal');
                     startTimer(300);
+
+                    // 작은 알림 표시
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate__animated animate__fadeIn';
+                    toast.innerHTML = `<p>인증 코드가 ${email}로 발송되었습니다.</p>`;
+                    document.body.appendChild(toast);
+
+                    // 3초 후 토스트 메시지 자동 제거
+                    setTimeout(() => {
+                        toast.classList.add('animate__fadeOut');
+                        setTimeout(() => toast.remove(), 500);
+                    }, 3000);
                 } else {
                     errorDiv.textContent = data.message || '이메일 전송에 실패했습니다.';
                     errorDiv.classList.remove('hidden');
@@ -1235,9 +1245,21 @@
             const data = await response.json();
 
             if (response.ok) {
+                // 구독 성공 시 바로 성공 모달 표시
                 closeModal('rssModal');
                 openModal('successModal');
                 e.target.reset();
+
+                // 토스트 메시지로 성공 알림
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate__animated animate__fadeIn';
+                toast.innerHTML = `<p>${siteName} 구독이 완료되었습니다!</p>`;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('animate__fadeOut');
+                    setTimeout(() => toast.remove(), 500);
+                }, 3000);
             } else {
                 if (response.status === 409) {
                     showModal('errorModal', 'RSS 피드 추가 실패', '이미 구독 중인 RSS 피드입니다.');

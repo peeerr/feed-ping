@@ -1,5 +1,6 @@
 package com.feedping.service;
 
+
 import com.feedping.domain.Member;
 import com.feedping.domain.MemberReceivedItem;
 import com.feedping.domain.RssFeed;
@@ -20,13 +21,12 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -52,7 +52,7 @@ public class RssFeedSyncService {
             try {
                 syncFeed(rssFeed);
             } catch (Exception e) {
-                log.error("Failed to sync RSS feed: {}", rssFeed.getUrl(), e);
+                log.error("RSS 피드 동기화에 실패했습니다. URL: {}", rssFeed.getUrl(), e);
             }
         }
     }
@@ -82,13 +82,7 @@ public class RssFeedSyncService {
         List<Subscription> subscriptions = subscriptionRepository.findByRssFeed(rssFeed);
         Map<Member, List<RssItem>> notificationMap = createNotificationMap(subscriptions, newItems);
 
-        // DB 작업 완료 후 트랜잭션 커밋
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                sendNotifications(notificationMap);
-            }
-        });
+        sendNotificationsAsync(notificationMap);
     }
 
     private Map<Member, List<RssItem>> createNotificationMap(List<Subscription> subscriptions, List<RssItem> newItems) {
@@ -107,17 +101,27 @@ public class RssFeedSyncService {
         return notificationMap;
     }
 
-    private void sendNotifications(Map<Member, List<RssItem>> notificationMap) {
+    private void sendNotificationsAsync(Map<Member, List<RssItem>> notificationMap) {
         notificationMap.forEach((subscriber, items) -> {
             try {
-                emailSender.sendRssNotification(
+                String siteName = getSubscriptionSiteName(subscriber, items.get(0).getRssFeed());
+
+                CompletableFuture<Boolean> future = emailSender.sendRssNotification(
                         subscriber.getEmail(),
-                        getSubscriptionSiteName(subscriber, items.get(0).getRssFeed()),
+                        siteName,
                         items
                 );
+
+                future.whenComplete((success, ex) -> {
+                    if (ex != null) {
+                        log.error("알림 이메일 전송에 실패했습니다. 수신자: {}", subscriber.getEmail(), ex);
+                    } else if (!success) {
+                        log.error("알림 이메일 전송 실패: {} (반환값: false)", subscriber.getEmail());
+                        // 필요 시 재시도 로직 추가 가능
+                    }
+                });
             } catch (Exception e) {
-                log.error("Failed to send notification to {}", subscriber.getEmail(), e);
-                // 실패한 알림 처리 (재시도 큐에 넣기 등)
+                log.error("알림 준비에 실패했습니다. 수신자: {}", subscriber.getEmail(), e);
             }
         });
     }
@@ -134,18 +138,22 @@ public class RssFeedSyncService {
                     .fromUriString(url)
                     .build(true)  // 이미 인코딩된 상태를 유지
                     .toUri();
+
+            // 여기서 대용량 데이터 문제가 발생할 수 있음
+            // 향후 개선 필요: 스트림 방식 파싱 또는 응답 크기 제한 구현
             String feedContent = restTemplate.getForObject(uri, String.class);
+
             try (StringReader reader = new StringReader(feedContent)) {
                 SyndFeed feed = new SyndFeedInput().build(reader);
 
                 return feed.getEntries().stream()
                         .map(RssItemDto::from)
                         .filter(this::isValidRssItem)
-                        .limit(20)
+                        .limit(20)  // 최대 20개 항목으로 제한
                         .toList();
             }
         } catch (Exception e) {
-            log.error("Failed to fetch or parse RSS feed: {}", url, e);
+            log.error("RSS 피드 가져오기 또는 파싱에 실패했습니다. URL: {}", url, e);
             throw new GlobalException(ErrorCode.RSS_FEED_PARSING_ERROR);
         }
     }

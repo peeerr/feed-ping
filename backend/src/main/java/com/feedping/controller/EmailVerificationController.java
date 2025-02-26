@@ -28,7 +28,10 @@ public class EmailVerificationController {
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<Void>> sendVerificationEmail(@RequestBody @Valid EmailVerificationSendRequest request) {
         emailVerificationService.sendVerificationEmail(request.getEmail());
-        return ResponseEntity.ok().body(ApiResponse.of(HttpStatus.OK.value()));
+
+        return ResponseEntity.accepted().body(
+                ApiResponse.ofAsync(HttpStatus.ACCEPTED.value(), "인증 코드가 발송 중입니다. 잠시 후 이메일을 확인해 주세요.")
+        );
     }
 
     @PostMapping("/verify")

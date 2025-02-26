@@ -11,6 +11,7 @@ public class ApiResponse<T> {
     private int code;
     private String message;
     private T data;
+    private boolean async;
 
     public static <T> ApiResponse<T> of(int code) {
         return new ApiResponse<>(code, "success");
@@ -18,6 +19,12 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> of(int code, T data) {
         return new ApiResponse<>(code, "success", data);
+    }
+
+    public static <T> ApiResponse<T> ofAsync(int code, String message) {
+        ApiResponse<T> response = new ApiResponse<>(code, message);
+        response.async = true;
+        return response;
     }
 
     public ApiResponse(int code, String message) {
