@@ -1,19 +1,18 @@
 package com.feedping.service;
 
-
 import com.feedping.domain.Member;
 import com.feedping.domain.MemberReceivedItem;
 import com.feedping.domain.RssFeed;
 import com.feedping.domain.RssItem;
 import com.feedping.domain.Subscription;
 import com.feedping.dto.RssItemDto;
+import com.feedping.event.RssNotificationEvent;
 import com.feedping.exception.ErrorCode;
 import com.feedping.exception.GlobalException;
 import com.feedping.repository.MemberReceivedItemRepository;
 import com.feedping.repository.RssFeedRepository;
 import com.feedping.repository.RssItemRepository;
 import com.feedping.repository.SubscriptionRepository;
-import com.feedping.util.EmailSender;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import java.io.StringReader;
@@ -21,9 +20,9 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +32,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class RssFeedSyncService {
 
@@ -41,8 +39,8 @@ public class RssFeedSyncService {
     private final RssItemRepository rssItemRepository;
     private final MemberReceivedItemRepository memberReceivedItemRepository;
     private final SubscriptionRepository subscriptionRepository;
-    private final EmailSender emailSender;
     private final RestTemplate restTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Scheduled(fixedDelay = 5 * 60 * 1000)
     public void syncAllFeeds() {
@@ -60,7 +58,14 @@ public class RssFeedSyncService {
     public void syncFeed(RssFeed rssFeed) {
         List<RssItemDto> fetchedEntries = fetchAndParseRssFeed(rssFeed.getUrl());
 
-        List<RssItem> itemsForNotification = fetchedEntries.stream()
+        if (!fetchedEntries.isEmpty()) {
+            processNewItems(rssFeed, fetchedEntries);
+        }
+    }
+
+    @Transactional
+    protected void processNewItems(RssFeed rssFeed, List<RssItemDto> entries) {
+        List<RssItem> items = entries.stream()
                 .map(entry -> rssItemRepository.findByLink(entry.getLink())
                         .orElseGet(() -> rssItemRepository.save(
                                 RssItem.builder()
@@ -73,16 +78,19 @@ public class RssFeedSyncService {
                         )))
                 .toList();
 
-        if (!itemsForNotification.isEmpty()) {
-            processNewItems(rssFeed, itemsForNotification);
+        if (!items.isEmpty()) {
+            List<Subscription> subscriptions = subscriptionRepository.findByRssFeed(rssFeed);
+            Map<Member, List<RssItem>> notificationMap = createNotificationMap(subscriptions, items);
+
+            // 알림이 필요한 구독자/아이템이 있으면 트랜잭션 이벤트 발행
+            if (!notificationMap.isEmpty()) {
+                // 사이트 이름은 첫 번째 구독에서 가져옴 (동일한 피드에 대해 구독자마다 다른 이름을 설정했을 수 있음)
+                String siteName = subscriptions.isEmpty() ? "피드" :
+                        subscriptions.get(0).getSiteName();
+
+                eventPublisher.publishEvent(new RssNotificationEvent(notificationMap, siteName));
+            }
         }
-    }
-
-    protected void processNewItems(RssFeed rssFeed, List<RssItem> newItems) {
-        List<Subscription> subscriptions = subscriptionRepository.findByRssFeed(rssFeed);
-        Map<Member, List<RssItem>> notificationMap = createNotificationMap(subscriptions, newItems);
-
-        sendNotificationsAsync(notificationMap);
     }
 
     private Map<Member, List<RssItem>> createNotificationMap(List<Subscription> subscriptions, List<RssItem> newItems) {
@@ -99,37 +107,6 @@ public class RssFeedSyncService {
         }
 
         return notificationMap;
-    }
-
-    private void sendNotificationsAsync(Map<Member, List<RssItem>> notificationMap) {
-        notificationMap.forEach((subscriber, items) -> {
-            try {
-                String siteName = getSubscriptionSiteName(subscriber, items.get(0).getRssFeed());
-
-                CompletableFuture<Boolean> future = emailSender.sendRssNotification(
-                        subscriber.getEmail(),
-                        siteName,
-                        items
-                );
-
-                future.whenComplete((success, ex) -> {
-                    if (ex != null) {
-                        log.error("알림 이메일 전송에 실패했습니다. 수신자: {}", subscriber.getEmail(), ex);
-                    } else if (!success) {
-                        log.error("알림 이메일 전송 실패: {} (반환값: false)", subscriber.getEmail());
-                        // 필요 시 재시도 로직 추가 가능
-                    }
-                });
-            } catch (Exception e) {
-                log.error("알림 준비에 실패했습니다. 수신자: {}", subscriber.getEmail(), e);
-            }
-        });
-    }
-
-    private String getSubscriptionSiteName(Member subscriber, RssFeed rssFeed) {
-        return subscriptionRepository.findByMemberAndRssFeed(subscriber, rssFeed)
-                .orElseThrow(() -> new GlobalException(ErrorCode.SUBSCRIPTION_NOT_FOUND))
-                .getSiteName();
     }
 
     private List<RssItemDto> fetchAndParseRssFeed(String url) {
