@@ -25,17 +25,15 @@ public class EmailVerificationService {
     public void sendVerificationEmail(String email) {
         String code = codeManager.createCode(email);
 
-        // 비동기로 이메일 전송 요청
         CompletableFuture<Boolean> future = emailSender.sendVerificationEmail(email, code);
 
-        // 오류 처리를 위한 콜백 등록 (선택사항)
+        // 오류 처리를 위한 콜백 등록
         future.whenComplete((success, ex) -> {
             if (ex != null) {
-                // 예외 발생 시 로깅
-                log.error("Verification email sending failed to {}", email, ex);
+                log.error("인증 이메일 전송에 실패했습니다. 수신자: {}", email, ex);
             } else if (!success) {
                 // 전송은 성공했으나 이메일 서버에서 처리 실패
-                log.error("Verification email sending failed to {}: Returned false", email);
+                log.error("인증 이메일 전송에 실패했습니다. 수신자: {} (반환값: false)", email);
             }
         });
     }
