@@ -1,8 +1,6 @@
 # FeedPing
 > RSS 피드를 통한 스마트한 정보 구독 서비스 📬
 
-<!-- ![FeedPing Banner](https://github.com/user-attachments/assets/3cad9d3c-2a55-4b1e-bb48-5d89e712a7ba) -->
-
 ![FeedPing Banner](https://github.com/user-attachments/assets/cf001243-71a8-4188-88d6-b2709b3eddcc)
 
 <br/>
@@ -20,67 +18,21 @@
 
 ### 서비스 링크
 
-<p align="center">
-  <a href="https://feedping.co.kr" target="_blank" 
-     style="background-color: #3B82F6; color: #fff; padding: 16px 32px; font-size: 18px; font-weight: bold; border-radius: 12px; text-decoration: none; display: inline-block;">
-    FeedPing 웹사이트 방문하기
-  </a>
-</p>
+🚀 [FeedPing 웹사이트 방문하기](https://feedping.co.kr)
 
 <br/>
 
 ## ⭐️ 주요 기능
 
-<div align="center" style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;">
-  
-  <!-- 1. 인기 RSS 피드 확인 및 등록 -->
-  <div style="max-width: 220px; text-align: center; background: #f9f9f9; border-radius: 8px; padding: 16px;">
-    <h3 style="margin: 12px 0 8px;">인기 RSS 피드 확인 및 등록</h3>
-    <p style="font-size: 14px; line-height: 1.4;">
-      인기 RSS 피드를 한눈에 보고<br/>
-      바로 등록해보세요
-    </p>
-    <img src="https://github.com/user-attachments/assets/d0f7c815-2038-4aa5-8587-56dbd574d6ed"
-         alt="인기 RSS 피드 확인 및 등록"
-         style="width: 100%; border-radius: 8px; margin-top: 8px;" />
-  </div>
+| 인기 RSS 피드 확인 및 등록 | RSS 피드 등록 |
+|:-------------------------:|:------------:|
+| ![인기 RSS 피드 확인 및 등록](https://github.com/user-attachments/assets/67b2fe50-f88e-48c3-b42b-8b42b93501df) | ![RSS 피드 등록](https://github.com/user-attachments/assets/e562316d-6346-490e-9ece-286e653c6bc8) |
+| 인기 RSS 피드를 한눈에 보고 바로 등록해보세요 | 관심있는 사이트의 RSS 주소 등록 |
 
-  <!-- 2. RSS 피드 등록 -->
-  <div style="max-width: 220px; text-align: center; background: #f9f9f9; border-radius: 8px; padding: 16px;">
-    <h3 style="margin: 12px 0 8px;">RSS 피드 등록</h3>
-    <p style="font-size: 14px; line-height: 1.4;">
-      관심있는 사이트의<br/>
-      RSS 주소 등록
-    </p>
-    <img src="https://github.com/user-attachments/assets/7e872088-6e74-4ac2-9f78-207b6fc5d878"
-         alt="RSS 피드 등록"
-         style="width: 50%; border-radius: 8px; margin-top: 8px;" />
-  </div>
-
-  <!-- 3. 새 글 알림 -->
-  <div style="max-width: 220px; text-align: center; background: #f9f9f9; border-radius: 8px; padding: 16px;">
-    <h3 style="margin: 12px 0 8px;">새 글 알림</h3>
-    <p style="font-size: 14px; line-height: 1.4;">
-      새 글이 등록되면<br/>
-      실시간 이메일 알림
-    </p>
-    <img src="https://github.com/user-attachments/assets/f57c0382-7b5f-4726-a10b-afe018fafd24"
-         alt="새 글 알림"
-         style="width: 50%; border-radius: 8px; margin-top: 8px;" />
-  </div>
-
-  <!-- 4. 구독 관리 -->
-  <div style="max-width: 220px; text-align: center; background: #f9f9f9; border-radius: 8px; padding: 16px;">
-    <h3 style="margin: 12px 0 8px;">구독 관리</h3>
-    <p style="font-size: 14px; line-height: 1.4;">
-      구독 중인 RSS를<br/>
-      손쉽게 관리
-    </p>
-    <img src="https://github.com/user-attachments/assets/f7dbaf33-dc96-4aa5-8746-9923c8889e67"
-         alt="구독 관리"
-         style="width: 100%; border-radius: 8px; margin-top: 8px;" />
-  </div>
-</div>
+| 새 글 알림 | 구독 관리 |
+|:---------:|:---------:|
+| ![새 글 알림](https://github.com/user-attachments/assets/78de3794-9166-415d-a3f4-c3a7765164ec) | ![구독 관리](https://github.com/user-attachments/assets/31e51f02-ea98-498a-82d2-634c57430f9d) |
+| 새 글이 등록되면 실시간 이메일 알림 | 구독 중인 RSS를 손쉽게 관리 |
 
 <br/>
 
