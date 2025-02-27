@@ -1364,7 +1364,9 @@
             } else {
                 if (response.status === 409) {
                     showModal('errorModal', 'RSS 피드 추가 실패', '이미 구독 중인 RSS 피드입니다.');
-                } else if (data.validation) {
+                } else if (data.validation && Object.keys(data.validation).length > 0) {
+                    // validation 객체가 존재하고 비어있지 않을 때만 실행
+                    console.log('유효성 검증 오류 감지');
                     Object.entries(data.validation).forEach(([field, message]) => {
                         const errorDiv = document.getElementById(`${field}Error`);
                         if (errorDiv) {
@@ -1373,7 +1375,6 @@
                         }
                     });
                 } else if (data.detail) {
-                    // RSS 유효성 검증 실패 등의 상세 오류 메시지
                     console.log('세부 오류 메시지 감지:', data.detail);
                     showModal('errorModal', 'RSS 피드 추가 실패', data.detail || '유효하지 않은 RSS 피드입니다.');
                 } else {
