@@ -35,17 +35,8 @@ public enum ErrorCode {
     EMAIL_SEND_FAILED("이메일 전송에 실패했습니다.", INTERNAL_SERVER_ERROR),
 
     // RSS 관련
-    RSS_FEED_PARSING_ERROR("RSS 피드를 가져오거나 파싱하는 중 오류가 발생했습니다.", INTERNAL_SERVER_ERROR),
     RSS_FEED_CONNECTION_ERROR("RSS 피드 서버에 연결할 수 없습니다.", SERVICE_UNAVAILABLE),
-    RSS_FEED_INVALID_FORMAT("잘못된 RSS 피드 형식입니다.", BAD_REQUEST),
-
-    // RSS 상세 오류 코드 추가
-    RSS_FEED_FORBIDDEN("RSS 피드에 접근할 권한이 없습니다 (403 Forbidden).", BAD_REQUEST),
-    RSS_FEED_NOT_FOUND("RSS 피드를 찾을 수 없습니다 (404 Not Found).", BAD_REQUEST),
-    RSS_FEED_SERVER_ERROR("RSS 피드 서버 오류가 발생했습니다.", SERVICE_UNAVAILABLE),
-    RSS_FEED_NO_ITEMS("RSS 피드에 항목이 없습니다.", BAD_REQUEST),
-    RSS_FEED_EMPTY_RESPONSE("RSS 피드 응답이 비어있습니다.", BAD_REQUEST),
-    RSS_FEED_ACCESS_ERROR("RSS 피드에 접근할 수 없습니다. 접속이 거부되었거나 시간 초과되었습니다.", SERVICE_UNAVAILABLE);
+    RSS_FEED_INVALID_FORMAT("잘못된 RSS 피드 형식입니다.", BAD_REQUEST);
 
     private final String message;
     private final HttpStatus status;
