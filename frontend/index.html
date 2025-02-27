@@ -187,6 +187,41 @@
             flex-direction: column;
             justify-content: flex-start;
         }
+
+        /* 모바일 환경에서 시작하기 버튼 완전 중앙 정렬 */
+        @media (max-width: 768px) {
+            /* 모바일 메뉴의 시작하기 버튼 완전 중앙 정렬 */
+            #mobile-menu .btn-primary {
+                display: flex;
+                justify-content: center;
+                text-align: center;
+                width: 100%;
+                padding: 12px 0;
+            }
+
+            /* 시작하기 버튼의 텍스트 위치 조정 */
+            button[onclick*="emailModal"] svg,
+            button[onclick="openModal('emailModal')"] svg {
+                margin-right: 8px;
+            }
+
+            /* Hero 섹션의 시작하기 버튼도 중앙 정렬 */
+            header button.inline-flex {
+                justify-content: center;
+                text-align: center;
+            }
+
+            /* 모바일 메뉴의 간격 넓히기 */
+            #mobile-menu .space-y-1 > * {
+                margin-bottom: 15px;
+                padding: 15px 8px;
+            }
+
+            /* 모바일 메뉴 자체에 패딩 추가 */
+            #mobile-menu {
+                padding: 20px 15px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
