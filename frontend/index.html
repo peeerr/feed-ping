@@ -415,7 +415,8 @@
                             class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
                             onclick="showPopularFeed('뉴스 속보', 'https://createfeed.fivefilters.org/extract.php?url=https%3A%2F%2Fsearch.naver.com%2Fsearch.naver%3Fwhere%3Dnexearch%26sm%3Dtop_hty%26fbm%3D0%26ie%3Dutf8%26query%3D%25EC%2586%258D%25EB%25B3%25B4&item=li.bx&item_title=a.news_tit+%40title&item_url=a.news_tit+%40href&item_desc=a.dsc_txt_wrap&item_image=img.thumb.api_get&unique_url=1&unique_title=1&max=5&order=document&guid=0')">
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-600 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-600 mr-2"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
                                 <line x1="6" y1="7" x2="18" y2="7"></line>
                                 <line x1="6" y1="11" x2="18" y2="11"></line>
@@ -448,8 +449,9 @@
                             class="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-102 hover:shadow-sm"
                             onclick="showPopularFeed('이 시각 인기 (SBS)', 'https://news.sbs.co.kr/news/TopicRssFeed.do?plink=RSSREADER')">
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.357 2.44a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.38 1.118l-3.357-2.44a1 1 0 00-1.175 0l-3.357 2.44c-.625.57-1.68-.197-1.38-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.76 9.384c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.957z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-500 mr-2"
+                                 viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.357 2.44a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.38 1.118l-3.357-2.44a1 1 0 00-1.175 0l-3.357 2.44c-.625.57-1.68-.197-1.38-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.76 9.384c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.957z"/>
                             </svg>
                             <span>이 시각 인기 (SBS)</span>
                         </div>
@@ -1351,16 +1353,14 @@
                     });
                 } else if (data.detail) {
                     // RSS 유효성 검증 실패 등의 상세 오류 메시지가 있는 경우
-                    rssUrlError.textContent = data.detail;
-                    rssUrlError.classList.remove('hidden');
+                    showModal('errorModal', 'RSS 피드 추가 실패', data.detail || '유효하지 않은 RSS 피드입니다.');
                 } else {
-                    rssUrlError.textContent = data.message || '구독 등록에 실패했습니다.';
-                    rssUrlError.classList.remove('hidden');
+                    showModal('errorModal', 'RSS 피드 추가 실패', data.message || '구독 등록에 실패했습니다.');
                 }
             }
         } catch (error) {
-            rssUrlError.textContent = '서버 오류가 발생했습니다.';
-            rssUrlError.classList.remove('hidden');
+            console.error('RSS 구독 처리 중 오류 발생:', error);
+            showModal('errorModal', '서버 오류', '서버와의 통신 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
         } finally {
             submitButton.disabled = false;
             submitButton.innerHTML = '구독하기';
