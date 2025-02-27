@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> invalid(MethodArgumentNotValidException e) {
-        ErrorResponse errorResponse = getErrorResponse(400, VALIDATION_ERROR);
+        ErrorResponse errorResponse = getErrorResponse(400, VALIDATION_ERROR, null);
 
         e.getFieldErrors().forEach(filedError ->
                 errorResponse.addValidation(filedError.getField(), filedError.getDefaultMessage()));
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException e) {
-        ErrorResponse errorResponse = getErrorResponse(400, VALIDATION_ERROR);
+        ErrorResponse errorResponse = getErrorResponse(400, VALIDATION_ERROR, null);
 
         e.getConstraintViolations().forEach(violation -> {
             String fieldName = violation.getPropertyPath().toString();
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException e) {
-        ErrorResponse errorResponse = getErrorResponse(400, "필수 파라미터가 누락되었습니다.");
+        ErrorResponse errorResponse = getErrorResponse(400, "필수 파라미터가 누락되었습니다.", null);
         errorResponse.addValidation(e.getParameterName(), "이 값은 필수입니다.");
 
         return ResponseEntity.badRequest().body(errorResponse);
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
-        ErrorResponse errorResponse = getErrorResponse(400, "잘못된 요청 형식입니다.");
+        ErrorResponse errorResponse = getErrorResponse(400, "잘못된 요청 형식입니다.", null);
 
         return ResponseEntity.badRequest().body(errorResponse);
     }
@@ -58,15 +58,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handlerCustomException(GlobalException e) {
         HttpStatus status = e.getErrorCode().getStatus();
 
-        ErrorResponse errorResponse = getErrorResponse(status.value(), e.getMessage());
+        ErrorResponse errorResponse = getErrorResponse(status.value(), e.getMessage(), e.getDetail());
 
         return ResponseEntity.status(status).body(errorResponse);
     }
 
-    private ErrorResponse getErrorResponse(int code, String message) {
+    private ErrorResponse getErrorResponse(int code, String message, String detail) {
         return ErrorResponse.builder()
                 .code(code)
                 .message(message)
+                .detail(detail)
                 .build();
     }
 

@@ -474,8 +474,8 @@
         submitButton.innerHTML = '<span class="animate-spin">⌛</span> 처리중...';
 
         // 기존 에러메시지 숨기기
-        rssUrlError.classList.add('hidden');
-        siteNameError.classList.add('hidden');
+        rssUrlError.style.display = 'none';
+        siteNameError.style.display = 'none';
 
         try {
             const response = await fetch(
@@ -511,9 +511,12 @@
                         const errorDiv = document.getElementById(`${field}Error`);
                         if (errorDiv) {
                             errorDiv.textContent = message;
-                            errorDiv.classList.remove('hidden');
+                            errorDiv.style.display = 'block';
                         }
                     });
+                } else if (data.detail) {
+                    // RSS 유효성 검증 실패 등의 상세 오류 메시지
+                    showModal('errorModal', 'RSS 피드 추가 실패', data.detail || '유효하지 않은 RSS 피드입니다.');
                 } else {
                     // 그 외 일반 에러
                     showModal('errorModal', 'RSS 피드 추가 실패', data.message || '구독 추가에 실패했습니다.');
@@ -526,12 +529,12 @@
             // 버튼 상태 복구
             submitButton.disabled = false;
             submitButton.innerHTML = `
-            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            RSS 피드 추가
-        `;
+        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        RSS 피드 추가
+    `;
         }
     });
 

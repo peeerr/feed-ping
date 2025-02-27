@@ -27,14 +27,16 @@ public class SubscriptionService {
     private final RssFeedRepository rssFeedRepository;
     private final AuthTokenService authTokenService;
     private final MemberRepository memberRepository;
+    private final RssValidationService rssValidationService;
 
-    @Transactional
     public void subscribeRss(RssSubscriptionRequest request) {
         String email = request.getEmail();
         String rssUrl = request.getRssUrl();
         String siteName = request.getSiteName();
-        Member member = getMemberByEmail(email);
 
+        rssValidationService.validateRssUrl(rssUrl);
+
+        Member member = getMemberByEmail(email);
         subscribe(member, rssUrl, siteName);
     }
 
@@ -49,8 +51,10 @@ public class SubscriptionService {
         String token = request.getToken();
         String rssUrl = request.getRssUrl();
         String siteName = request.getSiteName();
-        Member member = authTokenService.validateAndGetMember(token);
 
+        rssValidationService.validateRssUrl(rssUrl);
+
+        Member member = authTokenService.validateAndGetMember(token);
         subscribe(member, rssUrl, siteName);
     }
 

@@ -13,12 +13,14 @@ public class ErrorResponse {
 
     private final int code;
     private final String message;
+    private final String detail;
     private final Map<String, String> validation;
 
     @Builder
-    public ErrorResponse(int code, String message) {
+    public ErrorResponse(int code, String message, String detail) {
         this.code = code;
         this.message = message;
+        this.detail = detail;
         this.validation = new HashMap<>();
     }
 
