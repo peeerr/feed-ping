@@ -1322,28 +1322,7 @@
                 })
             });
 
-            console.log('응답 상태 코드:', response.status);
-            console.log('응답 전체 객체:', response);
-
-            // 응답 내용을 텍스트로 가져와 로깅
-            const responseText = await response.text();
-            console.log('응답 텍스트:', responseText);
-
-            // 텍스트가 JSON인지 확인
-            let data = {};
-            try {
-                if (responseText) {
-                    data = JSON.parse(responseText);
-                    console.log('파싱된 응답 데이터:', data);
-                    console.log('detail 필드 존재 여부:', !!data.detail);
-                    console.log('detail 필드 내용:', data.detail);
-                    console.log('message 필드 내용:', data.message);
-                }
-            } catch (parseError) {
-                console.error('응답 텍스트를 JSON으로 파싱할 수 없음:', parseError);
-            }
-
-            // const data = await response.json();
+            const data = await response.json();
 
             if (response.ok) {
                 // 구독 성공 시 바로 성공 모달 표시
@@ -1365,8 +1344,6 @@
                 if (response.status === 409) {
                     showModal('errorModal', 'RSS 피드 추가 실패', '이미 구독 중인 RSS 피드입니다.');
                 } else if (data.validation && Object.keys(data.validation).length > 0) {
-                    // validation 객체가 존재하고 비어있지 않을 때만 실행
-                    console.log('유효성 검증 오류 감지');
                     Object.entries(data.validation).forEach(([field, message]) => {
                         const errorDiv = document.getElementById(`${field}Error`);
                         if (errorDiv) {
@@ -1375,11 +1352,9 @@
                         }
                     });
                 } else if (data.detail) {
-                    console.log('세부 오류 메시지 감지:', data.detail);
                     showModal('errorModal', 'RSS 피드 추가 실패', data.detail || '유효하지 않은 RSS 피드입니다.');
                 } else {
                     // 그 외 일반 에러 (서버 오류, 접속 불가 등)
-                    console.log('일반 오류 메시지 감지:', data.message);
                     const errorMessage = data.message || '구독 추가에 실패했습니다.';
                     showModal('errorModal', 'RSS 피드 추가 실패', errorMessage);
                 }
