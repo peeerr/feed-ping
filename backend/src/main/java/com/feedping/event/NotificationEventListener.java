@@ -3,7 +3,7 @@ package com.feedping.event;
 import com.feedping.domain.Member;
 import com.feedping.domain.RssFeed;
 import com.feedping.repository.SubscriptionRepository;
-import com.feedping.util.EmailSender;
+import com.feedping.service.EmailSenderService;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class NotificationEventListener {
 
-    private final EmailSender emailSender;
+    private final EmailSenderService emailSenderService;
     private final SubscriptionRepository subscriptionRepository;
 
     /**
@@ -38,7 +38,7 @@ public class NotificationEventListener {
                 String siteName = getSiteName(member, rssFeed, event.getSiteName());
 
                 // 비동기 이메일 발송
-                CompletableFuture<Boolean> future = emailSender.sendRssNotification(
+                CompletableFuture<Boolean> future = emailSenderService.sendRssNotification(
                         member.getEmail(),
                         siteName,
                         items

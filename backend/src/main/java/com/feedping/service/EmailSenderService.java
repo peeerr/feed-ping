@@ -1,7 +1,6 @@
-package com.feedping.util;
+package com.feedping.service;
 
 import com.feedping.domain.RssItem;
-import com.feedping.service.AuthTokenService;
 import jakarta.mail.internet.MimeMessage;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -10,14 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
-public class EmailSender {
+@Service
+public class EmailSenderService {
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;

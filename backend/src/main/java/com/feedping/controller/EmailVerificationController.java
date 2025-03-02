@@ -2,10 +2,10 @@ package com.feedping.controller;
 
 import com.feedping.dto.ApiResponse;
 import com.feedping.dto.request.EmailRevokeRequest;
-import com.feedping.dto.request.EmailVerificationSendRequest;
 import com.feedping.dto.request.EmailVerificationConfirmRequest;
+import com.feedping.dto.request.EmailVerificationSendRequest;
 import com.feedping.service.EmailVerificationService;
-import com.feedping.util.EmailVerificationManager;
+import com.feedping.service.VerificationCodeStore;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,10 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmailVerificationController {
 
     private final EmailVerificationService emailVerificationService;
-    private final EmailVerificationManager emailVerificationManager;
+    private final VerificationCodeStore verificationCodeStore;
 
     @PostMapping("/send")
-    public ResponseEntity<ApiResponse<Void>> sendVerificationEmail(@RequestBody @Valid EmailVerificationSendRequest request) {
+    public ResponseEntity<ApiResponse<Void>> sendVerificationEmail(
+            @RequestBody @Valid EmailVerificationSendRequest request
+    ) {
         emailVerificationService.sendVerificationEmail(request.getEmail());
 
         return ResponseEntity.accepted().body(
@@ -42,13 +44,13 @@ public class EmailVerificationController {
 
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<Boolean>> checkAuthStatus(@RequestParam String email) {
-        boolean isVerified = emailVerificationManager.isEmailVerified(email);
+        boolean isVerified = verificationCodeStore.isEmailVerified(email);
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), isVerified));
     }
 
     @PostMapping("/revoke")
     public ResponseEntity<ApiResponse<Void>> revokeVerification(@RequestBody @Valid EmailRevokeRequest request) {
-        emailVerificationManager.revokeVerification(request.getEmail());
+        verificationCodeStore.revokeVerification(request.getEmail());
         return ResponseEntity.ok().body(ApiResponse.of(HttpStatus.OK.value()));
     }
 

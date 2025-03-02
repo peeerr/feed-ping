@@ -19,7 +19,7 @@ import com.feedping.dto.response.RssSubscriptionPageResponse;
 import com.feedping.dto.response.RssSubscriptionResponse;
 import com.feedping.exception.ErrorCode;
 import com.feedping.service.SubscriptionService;
-import com.feedping.util.EmailVerificationManager;
+import com.feedping.service.VerificationCodeStore;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class SubscriptionControllerTest {
     private SubscriptionService subscriptionService;
 
     @MockitoBean
-    private EmailVerificationManager emailVerificationManager;
+    private VerificationCodeStore verificationCodeStore;
 
     @Test
     @DisplayName("이메일 인증 후 RSS 피드 구독에 성공한다")
@@ -60,7 +60,7 @@ class SubscriptionControllerTest {
         ReflectionTestUtils.setField(request, "rssUrl", "https://feedping.co.kr/rss.xml");
         ReflectionTestUtils.setField(request, "siteName", "FeedPing Blog");
 
-        given(emailVerificationManager.isEmailVerified("test@example.com")).willReturn(true);
+        given(verificationCodeStore.isEmailVerified("test@example.com")).willReturn(true);
         willDoNothing().given(subscriptionService).subscribeRss(any(RssSubscriptionRequest.class));
 
         // when
@@ -72,7 +72,7 @@ class SubscriptionControllerTest {
         result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value(201));
 
-        then(emailVerificationManager).should().isEmailVerified("test@example.com");
+        then(verificationCodeStore).should().isEmailVerified("test@example.com");
         then(subscriptionService).should().subscribeRss(any(RssSubscriptionRequest.class));
     }
 
@@ -85,7 +85,7 @@ class SubscriptionControllerTest {
         ReflectionTestUtils.setField(request, "rssUrl", "https://feedping.co.kr/rss.xml");
         ReflectionTestUtils.setField(request, "siteName", "FeedPing Blog");
 
-        given(emailVerificationManager.isEmailVerified("test@example.com")).willReturn(false);
+        given(verificationCodeStore.isEmailVerified("test@example.com")).willReturn(false);
 
         // when
         ResultActions result = mockMvc.perform(post("/subscriptions")
@@ -97,7 +97,7 @@ class SubscriptionControllerTest {
                 .andExpect(jsonPath("$.code").value(401))
                 .andExpect(jsonPath("$.message").value(ErrorCode.EMAIL_NOT_VERIFIED.getMessage()));
 
-        then(emailVerificationManager).should().isEmailVerified("test@example.com");
+        then(verificationCodeStore).should().isEmailVerified("test@example.com");
         then(subscriptionService).shouldHaveNoInteractions();
     }
 

@@ -9,7 +9,7 @@ import com.feedping.exception.ErrorCode;
 import com.feedping.exception.GlobalException;
 import com.feedping.exception.ValidationErrorMessage;
 import com.feedping.service.SubscriptionService;
-import com.feedping.util.EmailVerificationManager;
+import com.feedping.service.VerificationCodeStore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
-    private final EmailVerificationManager emailVerificationManager;
+    private final VerificationCodeStore verificationCodeStore;
 
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> subscribeRss(
             @RequestBody @Valid RssSubscriptionRequest request
     ) {
-        if (!emailVerificationManager.isEmailVerified(request.getEmail())) {
+        if (!verificationCodeStore.isEmailVerified(request.getEmail())) {
             throw new GlobalException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
 

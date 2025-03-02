@@ -14,7 +14,7 @@ import com.feedping.dto.request.EmailRevokeRequest;
 import com.feedping.dto.request.EmailVerificationConfirmRequest;
 import com.feedping.dto.request.EmailVerificationSendRequest;
 import com.feedping.service.EmailVerificationService;
-import com.feedping.util.EmailVerificationManager;
+import com.feedping.service.VerificationCodeStore;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ class EmailVerificationControllerTest {
     private EmailVerificationService emailVerificationService;
 
     @MockitoBean
-    private EmailVerificationManager emailVerificationManager;
+    private VerificationCodeStore verificationCodeStore;
 
     @Test
     @DisplayName("이메일 인증 코드가 성공적으로 전송된다")
@@ -90,7 +90,7 @@ class EmailVerificationControllerTest {
     void should_CheckAuthStatus_When_ValidEmail() throws Exception {
         // given
         String email = "test@example.com";
-        given(emailVerificationManager.isEmailVerified(email)).willReturn(true);
+        given(verificationCodeStore.isEmailVerified(email)).willReturn(true);
 
         // when
         ResultActions result = mockMvc.perform(get("/email-verification/status")
@@ -101,7 +101,7 @@ class EmailVerificationControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data").value(true));
 
-        then(emailVerificationManager).should().isEmailVerified(email);
+        then(verificationCodeStore).should().isEmailVerified(email);
     }
 
     @Test
@@ -111,7 +111,7 @@ class EmailVerificationControllerTest {
         EmailRevokeRequest request = new EmailRevokeRequest();
         ReflectionTestUtils.setField(request, "email", "test@example.com");
 
-        willDoNothing().given(emailVerificationManager).revokeVerification(anyString());
+        willDoNothing().given(verificationCodeStore).revokeVerification(anyString());
 
         // when
         ResultActions result = mockMvc.perform(post("/email-verification/revoke")
@@ -122,7 +122,7 @@ class EmailVerificationControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));
 
-        then(emailVerificationManager).should().revokeVerification("test@example.com");
+        then(verificationCodeStore).should().revokeVerification("test@example.com");
     }
 
 }

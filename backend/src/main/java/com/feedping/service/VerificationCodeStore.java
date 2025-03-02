@@ -1,4 +1,4 @@
-package com.feedping.util;
+package com.feedping.service;
 
 import com.feedping.exception.ErrorCode;
 import com.feedping.exception.GlobalException;
@@ -7,11 +7,11 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
-@Component
-public class EmailVerificationManager {
+@Service
+public class VerificationCodeStore {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String EMAIL_VERIFICATION_PREFIX = "email_verification:";

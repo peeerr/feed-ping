@@ -2,8 +2,6 @@ package com.feedping.service;
 
 import com.feedping.domain.Member;
 import com.feedping.repository.MemberRepository;
-import com.feedping.util.EmailSender;
-import com.feedping.util.EmailVerificationManager;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmailVerificationService {
 
     private final MemberRepository memberRepository;
-    private final EmailVerificationManager codeManager;
-    private final EmailSender emailSender;
+    private final VerificationCodeStore codeManager;
+    private final EmailSenderService emailSenderService;
     private final AuthTokenService authTokenService;
 
     public void sendVerificationEmail(String email) {
         String code = codeManager.createCode(email);
 
-        CompletableFuture<Boolean> future = emailSender.sendVerificationEmail(email, code);
+        CompletableFuture<Boolean> future = emailSenderService.sendVerificationEmail(email, code);
 
         // 오류 처리를 위한 콜백 등록
         future.whenComplete((success, ex) -> {

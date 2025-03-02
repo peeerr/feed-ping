@@ -1,4 +1,4 @@
-package com.feedping.util;
+package com.feedping.service;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
