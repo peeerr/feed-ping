@@ -18,12 +18,19 @@ public class RssItemDto {
     private LocalDateTime publishedAt;  // <pubDate>
 
     public static RssItemDto from(SyndEntry entry) {
+        String description = Optional.ofNullable(entry.getDescription())
+                .map(SyndContent::getValue)
+                .orElse("");
+
+        // 설명이 최대 길이를 초과하면 자르고 "..." 추가
+        if (description.length() > 200) {
+            description = description.substring(0, 200) + "...";
+        }
+
         return new RssItemDto(
                 entry.getTitle(),
                 entry.getLink(),
-                Optional.ofNullable(entry.getDescription())
-                        .map(SyndContent::getValue)
-                        .orElse(""),
+                description,
                 Optional.ofNullable(entry.getPublishedDate())
                         .map(date -> date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
                         .orElse(null)
