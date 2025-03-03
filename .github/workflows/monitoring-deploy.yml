@@ -20,10 +20,6 @@ jobs:
             monitoring
           sparse-checkout-cone-mode: false
 
-      - name: Prometheus 설정 파일 수정
-        run: |
-          sed -i "s/APP_SERVER_IP/${{ secrets.APP_SERVER_IP }}/g" monitoring/prometheus.yml
-
       - name: EC2에서 기존 monitoring 폴더 삭제
         uses: appleboy/ssh-action@v1.0.3
         with:
