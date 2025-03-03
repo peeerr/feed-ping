@@ -192,4 +192,9 @@ public class NotificationMetrics {
         recordFeedProcessingTime(timeNanos / 1_000_000); 
     }
 
+    // 현재 처리 중인 알림 수 조회
+    public int getCurrentlyProcessingCount() {
+        return currentlyProcessingNotifications.get();
+    }
+
 }
