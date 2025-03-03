@@ -24,6 +24,16 @@ jobs:
         run: |
           sed -i "s/APP_SERVER_IP/${{ secrets.APP_SERVER_IP }}/g" monitoring/prometheus.yml
 
+      - name: EC2에서 기존 monitoring 폴더 삭제
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.MONITORING_EC2_HOST }}
+          username: ${{ secrets.MONITORING_EC2_USERNAME }}
+          key: ${{ secrets.MONITORING_EC2_KEY }}
+          script_stop: true
+          script: |
+            rm -rf ~/monitoring
+
       - name: EC2로 파일 전송
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -50,5 +60,5 @@ jobs:
             GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
             EOF
             
-            docker-compose down || true
-            docker-compose up --build -d
+            docker compose down || true
+            docker compose up --build -d
