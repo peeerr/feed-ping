@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.TaskRejectedException;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -45,31 +47,51 @@ public class EmailSenderService {
             metrics.stopEmailSendingTimer(emailTimer);
             metrics.recordEmailSent();
 
-            log.info("이메일 전송에 성공했습니다. 수신자: {}", to);
+            log.info("이메일 전송 성공: {}", to);
             return CompletableFuture.completedFuture(true);
+        } catch (TaskRejectedException e) {
+            // 작업 거부 오류 명시적 처리
+            metrics.recordTaskRejected();
+            log.error("이메일 전송 작업이 큐 포화로 거부되었습니다: {}", to, e);
+            return CompletableFuture.completedFuture(false);
+        } catch (MailException e) {
+            // 메일 전송 관련 오류
+            String errorType = e.getClass().getSimpleName();
+            metrics.recordEmailFailedByReason("MailError-" + errorType);
+            log.error("메일 서버 오류: {}", to, e);
+            return CompletableFuture.completedFuture(false);
         } catch (Exception e) {
-            // 실패 기록
+            // 기타 오류
             String errorType = e.getClass().getSimpleName();
             metrics.recordEmailFailedByReason(errorType);
-
-            log.error("이메일 전송에 실패했습니다. 수신자: {}", to, e);
-            return CompletableFuture.failedFuture(e);
+            log.error("이메일 전송 실패: {}", to, e);
+            return CompletableFuture.completedFuture(false);
         }
     }
 
     @Async("emailTaskExecutor")
     public CompletableFuture<Boolean> sendVerificationEmail(String to, String code) {
-        Timer.Sample overallTimer = metrics.startTimer();
+        try {
+            Timer.Sample overallTimer = metrics.startTimer();
 
-        Context context = new Context();
-        context.setVariable("code", code);
-        context.setVariable("expirationMinutes", 5);
-        String content = templateEngine.process("mail/verification-email", context);
+            Context context = new Context();
+            context.setVariable("code", code);
+            context.setVariable("expirationMinutes", 5);
+            String content = templateEngine.process("mail/verification-email", context);
 
-        // 타이머 중지
-        metrics.stopEmailSendingTimer(overallTimer);
+            // 타이머 중지
+            metrics.stopEmailSendingTimer(overallTimer);
 
-        return sendMailAsync(to, mailProperties.template().verificationSubject(), content);
+            return sendMailAsync(to, mailProperties.template().verificationSubject(), content);
+        } catch (TaskRejectedException e) {
+            metrics.recordTaskRejected();
+            log.error("인증 이메일 전송 작업이 큐 포화로 거부되었습니다: {}", to, e);
+            return CompletableFuture.completedFuture(false);
+        } catch (Exception e) {
+            log.error("인증 이메일 준비 중 오류: {}", to, e);
+            metrics.recordEmailFailedByReason("VerificationPreparationError");
+            return CompletableFuture.completedFuture(false);
+        }
     }
 
     @Async("emailTaskExecutor")
@@ -92,10 +114,14 @@ public class EmailSenderService {
             metrics.stopProcessingTimer(processTimer);
 
             return sendMailAsync(to, subject, content);
+        } catch (TaskRejectedException e) {
+            metrics.recordTaskRejected();
+            log.error("알림 이메일 전송 작업이 큐 포화로 거부되었습니다: {}", to, e);
+            return CompletableFuture.completedFuture(false);
         } catch (Exception e) {
-            metrics.recordEmailFailedByReason("TemplateProcessingError");
-            log.error("알림 이메일 템플릿 처리 중 오류 발생: {}", to, e);
-            return CompletableFuture.failedFuture(e);
+            metrics.recordEmailFailedByReason("NotificationPreparationError");
+            log.error("알림 이메일 템플릿 처리 중 오류: {}", to, e);
+            return CompletableFuture.completedFuture(false);
         }
     }
 

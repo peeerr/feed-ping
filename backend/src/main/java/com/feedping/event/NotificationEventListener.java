@@ -10,14 +10,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-/**
- * RSS 알림 이벤트 리스너 트랜잭션 완료 후 이메일 발송을 담당
- */
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -27,9 +25,6 @@ public class NotificationEventListener {
     private final SubscriptionRepository subscriptionRepository;
     private final NotificationMetrics metrics;
 
-    /**
-     * RSS 알림 이벤트 처리 트랜잭션이 성공적으로 커밋된 후에만 실행됩니다.
-     */
     @Async("emailTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleNotificationEvent(RssNotificationEvent event) {
@@ -59,45 +54,63 @@ public class NotificationEventListener {
                 RssFeed rssFeed = items.get(0).getRssFeed();
                 String siteName = getSiteName(member, rssFeed, event.getSiteName());
 
-                // 비동기 이메일 발송
-                CompletableFuture<Boolean> future = emailSenderService.sendRssNotification(
-                        member.getEmail(),
-                        siteName,
-                        items
-                );
+                try {
+                    // 비동기 이메일 발송 시도
+                    CompletableFuture<Boolean> future = emailSenderService.sendRssNotification(
+                            member.getEmail(),
+                            siteName,
+                            items
+                    );
 
-                future.whenComplete((success, ex) -> {
-                    // 처리 완료 시 타이머 종료
-                    metrics.stopProcessingTimer(notificationTimer);
+                    future.whenComplete((success, ex) -> {
+                        // 처리 완료 시 타이머 종료
+                        metrics.stopProcessingTimer(notificationTimer);
 
-                    if (ex != null) {
-                        log.error("알림 이메일 전송에 실패했습니다. 수신자: {}", member.getEmail(), ex);
-                        failedCount.addAndGet(items.size());
-                        metrics.recordFailed(items.size());
-                    } else if (!success) {
-                        log.error("알림 이메일 전송 실패: {} (반환값: false)", member.getEmail());
-                        failedCount.addAndGet(items.size());
-                        metrics.recordFailed(items.size());
-                    } else {
-                        log.info("알림 이메일 전송 성공: {}, 아이템: {}", member.getEmail(), items.size());
-                        processedCount.addAndGet(items.size());
-                        metrics.recordProcessed(items.size());
-                    }
+                        if (ex != null) {
+                            log.error("알림 이메일 전송에 실패했습니다. 수신자: {}", member.getEmail(), ex);
+                            failedCount.addAndGet(items.size());
+                            metrics.recordFailed(items.size());
+                            metrics.recordEmailFailedByReason(ex.getClass().getSimpleName());
+                        } else if (!success) {
+                            log.error("알림 이메일 전송 실패: {} (반환값: false)", member.getEmail());
+                            failedCount.addAndGet(items.size());
+                            metrics.recordFailed(items.size());
+                            metrics.recordEmailFailedByReason("UnknownFailure");
+                        } else {
+                            log.info("알림 이메일 전송 성공: {}, 아이템: {}", member.getEmail(), items.size());
+                            processedCount.addAndGet(items.size());
+                            metrics.recordProcessed(items.size());
+                        }
 
-                    // 진행 중인 작업 카운터 감소
+                        // 진행 중인 작업 카운터 감소
+                        metrics.decrementCurrentlyProcessing(items.size());
+
+                        // 모든 작업이 완료되면 배치 타이머 종료
+                        if (processedCount.get() + failedCount.get() >= totalNotifications) {
+                            metrics.stopProcessingTimer(batchTimer);
+                            log.info("알림 배치 처리 완료 - 성공: {}, 실패: {}",
+                                    processedCount.get(), failedCount.get());
+                        }
+                    });
+                } catch (TaskRejectedException e) {
+                    // 작업 거부 오류 명시적 처리
+                    log.error("작업 큐 포화로 작업이 거부되었습니다. 수신자: {}", member.getEmail(), e);
+                    failedCount.addAndGet(items.size());
+                    metrics.recordFailed(items.size());
+                    metrics.recordTaskRejected(); // 작업 거부 카운터 증가
                     metrics.decrementCurrentlyProcessing(items.size());
-
-                    // 모든 작업이 완료되면 배치 타이머 종료
-                    if (processedCount.get() + failedCount.get() >= totalNotifications) {
-                        metrics.stopProcessingTimer(batchTimer);
-                        log.info("알림 배치 처리 완료 - 성공: {}, 실패: {}",
-                                processedCount.get(), failedCount.get());
-                    }
-                });
+                }
             } catch (Exception e) {
                 log.error("알림 준비에 실패했습니다. 수신자: {}", member.getEmail(), e);
                 failedCount.addAndGet(items.size());
                 metrics.recordFailed(items.size());
+
+                // 예외 유형 기록
+                if (e instanceof TaskRejectedException) {
+                    metrics.recordTaskRejected();
+                } else {
+                    metrics.recordEmailFailedByReason("PreparationFailure");
+                }
 
                 // 진행 중인 작업 카운터 감소
                 metrics.decrementCurrentlyProcessing(items.size());
@@ -105,9 +118,6 @@ public class NotificationEventListener {
         });
     }
 
-    /**
-     * 사이트 이름을 조회합니다. 먼저 구독 정보에서 찾고, 없으면 기본값 사용
-     */
     private String getSiteName(Member member, RssFeed rssFeed, String defaultName) {
         return subscriptionRepository.findByMemberAndRssFeed(member, rssFeed)
                 .map(subscription -> subscription.getSiteName())

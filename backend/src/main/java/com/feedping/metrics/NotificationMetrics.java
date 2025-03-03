@@ -4,16 +4,11 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import org.springframework.stereotype.Component;
-
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.stereotype.Component;
 
-/**
- * RSS 알림 처리 관련 메트릭스 수집
- */
 @Component
 public class NotificationMetrics {
 
@@ -26,6 +21,9 @@ public class NotificationMetrics {
     private final Counter emailsFailedCounter;
     private final Counter feedsProcessedCounter;
 
+    // 작업 거부 카운터 추가
+    private final Counter taskRejectedCounter;
+
     private final Timer notificationProcessingTimer;
     private final Timer emailSendingTimer;
     private final Timer feedProcessingTimer;
@@ -33,13 +31,11 @@ public class NotificationMetrics {
     private final AtomicInteger currentlyProcessingNotifications;
     private final AtomicInteger emailQueueSize;
 
-    // 이메일 실패 이유별 카운터
     private final ConcurrentHashMap<String, Counter> emailFailuresByReason;
 
     public NotificationMetrics(MeterRegistry registry) {
         this.registry = registry;
-        
-        // 알림 처리량 관련 카운터
+
         this.notificationsQueuedCounter = Counter.builder("feedping.notifications.queued")
                 .description("알림 큐에 추가된 총 건수")
                 .register(registry);
@@ -64,7 +60,11 @@ public class NotificationMetrics {
                 .description("처리된 RSS 피드 건수")
                 .register(registry);
 
-        // 알림 처리 시간 측정 타이머
+        // 작업 거부 카운터 등록
+        this.taskRejectedCounter = Counter.builder("feedping.tasks.rejected")
+                .description("큐 포화로 거부된 작업 건수")
+                .register(registry);
+
         this.notificationProcessingTimer = Timer.builder("feedping.notifications.processing.time")
                 .description("알림 처리 소요 시간 (ms)")
                 .publishPercentiles(0.5, 0.95, 0.99)
@@ -83,9 +83,9 @@ public class NotificationMetrics {
                 .publishPercentileHistogram()
                 .register(registry);
 
-        // 현재 상태 모니터링을 위한 게이지
         this.currentlyProcessingNotifications = new AtomicInteger(0);
-        Gauge.builder("feedping.notifications.currently_processing", currentlyProcessingNotifications, AtomicInteger::get)
+        Gauge.builder("feedping.notifications.currently_processing", currentlyProcessingNotifications,
+                        AtomicInteger::get)
                 .description("현재 처리 중인 알림 건수")
                 .register(registry);
 
@@ -94,7 +94,6 @@ public class NotificationMetrics {
                 .description("이메일 전송 큐의 현재 크기")
                 .register(registry);
 
-        // 이메일 실패 이유별 카운터를 위한 맵
         this.emailFailuresByReason = new ConcurrentHashMap<>();
     }
 
@@ -121,6 +120,13 @@ public class NotificationMetrics {
     // 이메일 실패 카운터
     public void recordEmailFailed() {
         emailsFailedCounter.increment();
+    }
+
+    // 작업 거부 카운터 (추가된 메서드)
+    public void recordTaskRejected() {
+        taskRejectedCounter.increment();
+        // 실패 이유별 카운터에도 추가
+        recordEmailFailedByReason("TaskRejection");
     }
 
     // 실패 이유별 이메일 실패 추적
@@ -169,6 +175,11 @@ public class NotificationMetrics {
         emailQueueSize.set(size);
     }
 
+    // 현재 처리 중인 알림 수 조회
+    public int getCurrentlyProcessingCount() {
+        return currentlyProcessingNotifications.get();
+    }
+
     // 타이머 샘플 시작 (더 정확한 측정을 위해)
     public Timer.Sample startTimer() {
         return Timer.start();
@@ -177,24 +188,19 @@ public class NotificationMetrics {
     // 알림 처리 타이머 종료 및 기록
     public void stopProcessingTimer(Timer.Sample sample) {
         long timeNanos = sample.stop(notificationProcessingTimer);
-        recordProcessingTime(timeNanos / 1_000_000); 
+        recordProcessingTime(timeNanos / 1_000_000);
     }
 
     // 이메일 전송 타이머 종료 및 기록
     public void stopEmailSendingTimer(Timer.Sample sample) {
         long timeNanos = sample.stop(emailSendingTimer);
-        recordEmailSendingTime(timeNanos / 1_000_000); 
+        recordEmailSendingTime(timeNanos / 1_000_000);
     }
 
     // RSS 피드 처리 타이머 종료 및 기록
     public void stopFeedProcessingTimer(Timer.Sample sample) {
         long timeNanos = sample.stop(feedProcessingTimer);
-        recordFeedProcessingTime(timeNanos / 1_000_000); 
-    }
-
-    // 현재 처리 중인 알림 수 조회
-    public int getCurrentlyProcessingCount() {
-        return currentlyProcessingNotifications.get();
+        recordFeedProcessingTime(timeNanos / 1_000_000);
     }
 
 }
