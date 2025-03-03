@@ -1,0 +1,55 @@
+name: 모니터링 서버 배포
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'monitoring/**'
+      - '.github/workflows/monitoring-deploy.yml'
+  workflow_dispatch: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 모니터링 코드만 체크아웃
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            monitoring
+          sparse-checkout-cone-mode: false
+
+      - name: Prometheus 설정 파일 수정
+        run: |
+          sed -i "s/APP_SERVER_IP/${{ secrets.APP_SERVER_IP }}/g" monitoring/prometheus.yml
+
+      - name: EC2로 파일 전송
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.MONITORING_EC2_HOST }}
+          username: ${{ secrets.MONITORING_EC2_USERNAME }}
+          key: ${{ secrets.MONITORING_EC2_KEY }}
+          source: "monitoring/*"
+          target: "/home/ubuntu/monitoring"
+          strip_components: 1
+
+      - name: 도커 컨테이너 실행
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.MONITORING_EC2_HOST }}
+          username: ${{ secrets.MONITORING_EC2_USERNAME }}
+          key: ${{ secrets.MONITORING_EC2_KEY }}
+          script_stop: true
+          script: |
+            cd ~/monitoring
+            
+            # 환경 변수 파일 생성
+            cat > .env << EOF
+            GRAFANA_ADMIN_USER=${{ secrets.GRAFANA_ADMIN_USER }}
+            GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+            EOF
+            
+            docker-compose down || true
+            docker-compose up --build -d
