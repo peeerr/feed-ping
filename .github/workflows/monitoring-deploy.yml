@@ -7,7 +7,6 @@ on:
     paths:
       - 'monitoring/**'
       - '.github/workflows/monitoring-deploy.yml'
-  workflow_dispatch: false
 
 jobs:
   deploy:
