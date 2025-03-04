@@ -38,3 +38,9 @@ app:
     base-url: http://localhost:8080
     template:
       verification-subject: "[FeedPing Test] 이메일 인증을 완료해주세요"
+
+notification:
+  batch-size: 50
+  timeout-seconds: 30
+  worker-threads: 5
+  max-retry-count: 3

@@ -52,12 +52,12 @@ public class EmailSenderService {
         } catch (TaskRejectedException e) {
             // 작업 거부 오류 명시적 처리
             metrics.recordTaskRejected();
-            log.error("이메일 전송 작업이 큐 포화로 거부되었습니다: {}", to, e);
+            log.error("이메일 전송 작업이 큐 포화로 거부됨: {}", to, e);
             return CompletableFuture.completedFuture(false);
         } catch (MailException e) {
             // 메일 전송 관련 오류
             String errorType = e.getClass().getSimpleName();
-            metrics.recordEmailFailedByReason("MailError-" + errorType);
+            metrics.recordEmailFailedByReason("메일오류-" + errorType);
             log.error("메일 서버 오류: {}", to, e);
             return CompletableFuture.completedFuture(false);
         } catch (Exception e) {

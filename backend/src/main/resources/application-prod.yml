@@ -54,3 +54,9 @@ server:
   tomcat:
     mbeanregistry:
       enabled: true
+
+notification:
+  batch-size: 50
+  timeout-seconds: 30
+  worker-threads: 5
+  max-retry-count: 3

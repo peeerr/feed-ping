@@ -26,34 +26,48 @@ public class RssFeedSyncService {
      */
     @Scheduled(fixedDelay = 5 * 60 * 1000)
     public void syncAllFeeds() {
-        Timer.Sample syncTimer = metrics.startTimer();
-
         List<RssFeed> rssFeeds = rssFeedRepository.findAll();
         log.info("전체 RSS 피드 동기화 시작: {} 개 피드", rssFeeds.size());
 
+        // 전체 동기화 작업 타이머 시작
+        Timer.Sample overallSyncTimer = metrics.startTimer();
         int successCount = 0;
         int failCount = 0;
 
         for (RssFeed rssFeed : rssFeeds) {
             try {
-                syncFeed(rssFeed);
+                // 별도 스레드에서 동기화 실행 (병렬 처리를 위해)
+                syncFeedAsync(rssFeed);
                 successCount++;
                 metrics.recordFeedProcessed();
             } catch (Exception e) {
                 failCount++;
+                metrics.recordFeedFailed();
                 log.error("RSS 피드 동기화에 실패했습니다. URL: {}", rssFeed.getUrl(), e);
             }
         }
 
-        // 동기화 작업 완료 후 타이머 기록
-        metrics.stopFeedProcessingTimer(syncTimer);
-        log.info("전체 RSS 피드 동기화 완료: 성공 {}, 실패 {}", successCount, failCount);
+        // 전체 동기화 작업 완료 메트릭 기록
+        metrics.stopFeedProcessingTimer(overallSyncTimer);
+        log.info("전체 RSS 피드 동기화 완료: 성공: {}, 실패: {}", successCount, failCount);
+    }
+
+    /**
+     * 단일 RSS 피드를 비동기적으로 동기화
+     */
+    private void syncFeedAsync(RssFeed rssFeed) {
+        try {
+            syncFeed(rssFeed);
+        } catch (Exception e) {
+            log.error("RSS 피드 비동기 동기화 중 오류 발생: {}", rssFeed.getUrl(), e);
+        }
     }
 
     /**
      * 단일 RSS 피드 동기화
      */
     public void syncFeed(RssFeed rssFeed) {
+        // 단일 피드 동기화 타이머 시작
         Timer.Sample feedTimer = metrics.startTimer();
 
         try {
@@ -69,7 +83,7 @@ public class RssFeedSyncService {
                 log.info("새 항목이 없습니다: {}", rssFeed.getUrl());
             }
 
-            // 성공 시 타이머 기록
+            // 피드 처리 성공 메트릭 기록
             metrics.stopFeedProcessingTimer(feedTimer);
         } catch (Exception e) {
             // 실패 처리
