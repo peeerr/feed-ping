@@ -83,14 +83,15 @@ public class PriorityNotificationQueue {
     public List<NotificationTask> drainTasks(int maxBatchSize) {
         List<NotificationTask> batch = new ArrayList<>(maxBatchSize);
 
-        // 우선순위 높은 큐부터 차례로 처리
-        for (Priority priority : Priority.values()) {
-            if (batch.size() >= maxBatchSize) {
-                break;
-            }
+        // 각 우선순위 큐에서 가져올 작업 수 계산
+        int taskPerQueue = maxBatchSize / Priority.values().length;
+        int remainder = maxBatchSize % Priority.values().length;
 
+        // 각 우선순위 큐에서 균등하게 작업 가져오기
+        for (Priority priority : Priority.values()) {
+            int takeCount = taskPerQueue + (priority.ordinal() < remainder ? 1 : 0);
             LinkedBlockingQueue<NotificationTask> queue = priorityQueues.get(priority);
-            queue.drainTo(batch, maxBatchSize - batch.size());
+            queue.drainTo(batch, takeCount);
         }
 
         updateMetrics();
