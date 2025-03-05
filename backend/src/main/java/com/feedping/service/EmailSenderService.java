@@ -110,9 +110,6 @@ public class EmailSenderService {
 
             String subject = String.format("[FeedPing] %s에 새 글이 등록되었습니다.", siteName);
 
-            // 타이머 종료 (템플릿 처리 시간 기록)
-            metrics.stopProcessingTimer(processTimer);
-
             return sendMailAsync(to, subject, content);
         } catch (TaskRejectedException e) {
             metrics.recordTaskRejected();
