@@ -25,10 +25,12 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.task.TaskRejectedException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -95,7 +97,8 @@ public class NotificationService {
                 batchSize, workerThreads, timeoutSeconds);
     }
 
-    @EventListener
+    @Async("emailTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleRssNotificationEvent(RssNotificationEvent event) {
         Timer.Sample eventTimer = metrics.startTimer();
 
