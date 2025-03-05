@@ -22,4 +22,15 @@ public class AsyncConfig {
         return executor;
     }
 
+    @Bean(name = "feedSyncExecutor")
+    public Executor feedSyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(20);
+        executor.setThreadNamePrefix("FeedSync-");
+        executor.initialize();
+        return executor;
+    }
+
 }
