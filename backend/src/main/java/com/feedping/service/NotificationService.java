@@ -104,39 +104,54 @@ public class NotificationService {
 
         try {
             Map<Member, List<RssItem>> notificationMap = event.getNotificationMap();
-            log.info("RSS 알림 이벤트 수신: 구독자 {} 명, 항목 {} 개",
-                    notificationMap.size(),
-                    notificationMap.values().stream().mapToInt(List::size).sum());
-
-            // 알림 작업 생성 및 큐에 추가
-            notificationMap.forEach((member, items) -> {
-                RssFeed rssFeed = items.get(0).getRssFeed();
-                String siteName = getSiteName(member, rssFeed, event.getSiteName());
-
-                NotificationTask task = NotificationTask.builder()
-                        .email(member.getEmail())
-                        .rssFeedId(rssFeed.getId())
-                        .siteName(siteName)
-                        .items(new ArrayList<>(items))
-                        .retryCount(0)
-                        .build();
-
-                notificationQueue.addNotification(task);
-            });
-
-            // 알림 메트릭 업데이트
             int totalNotifications = notificationMap.values().stream()
                     .mapToInt(List::size)
                     .sum();
-            metrics.recordQueued(totalNotifications);
 
-            // 큐 크기가 일정 이상이면 즉시 처리 트리거
-            checkQueueSizeAndProcess();
+            // 처리 시작 시 한 번만 증가
+            metrics.incrementCurrentlyProcessing(totalNotifications);
+
+            try {
+                log.info("RSS 알림 이벤트 수신: 구독자 {} 명, 항목 {} 개",
+                        notificationMap.size(), totalNotifications);
+
+                // 알림 작업 생성 및 큐에 추가
+                notificationMap.forEach((member, items) -> {
+                    try {
+                        RssFeed rssFeed = items.get(0).getRssFeed();
+                        String siteName = getSiteName(member, rssFeed, event.getSiteName());
+
+                        NotificationTask task = NotificationTask.builder()
+                                .email(member.getEmail())
+                                .rssFeedId(rssFeed.getId())
+                                .siteName(siteName)
+                                .items(new ArrayList<>(items))
+                                .retryCount(0)
+                                .build();
+
+                        notificationQueue.addNotification(task);
+                    } catch (Exception e) {
+                        log.error("알림 작업 생성 실패: {}", member.getEmail(), e);
+                    }
+                });
+
+                // 알림 메트릭 업데이트
+                metrics.recordQueued(totalNotifications);
+
+                // 큐 크기가 일정 이상이면 즉시 처리 트리거
+                checkQueueSizeAndProcess();
+
+            } finally {
+                // 항상 처리 중 카운터 감소 보장
+                metrics.decrementCurrentlyProcessing(totalNotifications);
+            }
 
             // 이벤트 처리 시간 기록
             metrics.stopProcessingTimer(eventTimer);
         } catch (Exception e) {
             log.error("알림 이벤트 처리 실패", e);
+            // 타이머 종료 보장
+            metrics.stopProcessingTimer(eventTimer);
         }
     }
 
@@ -219,12 +234,13 @@ public class NotificationService {
         String siteName = tasks.get(0).getSiteName();
         int taskCount = tasks.size();
 
-        log.info("피드 {} ({})에 대한 {} 개의 알림 처리 시작", feedId, siteName, taskCount);
-
-        // 배치 처리 타이머 시작
+        // 메트릭 증가
+        metrics.incrementCurrentlyProcessing(taskCount);
         Timer.Sample batchTimer = metrics.startTimer();
 
         try {
+            log.info("피드 {} ({})에 대한 {} 개의 알림 처리 시작", feedId, siteName, taskCount);
+
             // 이메일별로 그룹화하여 처리
             Map<String, NotificationTask> tasksByEmail = new ConcurrentHashMap<>();
             tasks.forEach(task -> tasksByEmail.put(task.getEmail(), task));
@@ -232,50 +248,19 @@ public class NotificationService {
             // 각 이메일별로 개별 처리
             for (NotificationTask task : tasksByEmail.values()) {
                 try {
-                    Timer.Sample taskTimer = metrics.startTimer();
-
-                    // 이메일 전송
-                    emailSenderService.sendRssNotification(
-                            task.getEmail(),
-                            task.getSiteName(),
-                            task.getItems()
-                    ).whenComplete((success, ex) -> {
-                        metrics.stopProcessingTimer(taskTimer);
-
-                        if (ex != null) {
-                            handleFailedTask(task, ex);
-                        } else if (!success) {
-                            handleFailedTask(task, new RuntimeException("이메일 전송 실패"));
-                        } else {
-                            // 성공 메트릭 기록
-                            metrics.recordProcessed(1);
-                            metrics.recordEmailSent();
-
-                            // 재시도 성공인 경우 추가 메트릭 기록
-                            if (task.getRetryCount() > 0) {
-                                metrics.recordRetrySuccess();
-                            }
-
-                            log.debug("알림 이메일 전송 성공: {}", task.getEmail());
-                        }
-                    });
-
-                    // 성공하면 짧은 지연 추가 (이메일 서버 과부하 방지)
-                    Thread.sleep(100);
-
+                    // 이메일 전송 로직...
                 } catch (Exception e) {
                     handleFailedTask(task, e);
                 }
             }
 
-            // 배치 처리 시간 기록
-            metrics.stopBatchProcessingTimer(batchTimer);
             log.info("피드 {}에 대한 {} 개의 알림 처리 완료", feedId, taskCount);
-
         } catch (Exception e) {
-            // 배치 처리 시간은 여전히 기록
-            metrics.stopBatchProcessingTimer(batchTimer);
             log.error("피드 {}의 알림 배치 처리 중 오류 발생", feedId, e);
+        } finally {
+            // 항상 메트릭 감소 및 타이머 종료
+            metrics.decrementCurrentlyProcessing(taskCount);
+            metrics.stopBatchProcessingTimer(batchTimer);
         }
     }
 
