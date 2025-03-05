@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,10 +16,9 @@ public class NotificationMetrics {
 
     private final MeterRegistry registry;
 
-    // 기존 카운터
     private final Counter notificationsQueuedCounter;
-    private final Counter notificationsProcessedCounter;
-    private final Counter notificationsFailedCounter;
+    private final Map<String, Counter> notificationsProcessedCounters; // 우선순위별 처리 카운터
+    private final Map<String, Counter> notificationsFailedCounters;    // 우선순위별 실패 카운터
     private final Counter emailsSentCounter;
     private final Counter emailsFailedCounter;
     private final Counter feedsProcessedCounter;
@@ -37,14 +37,20 @@ public class NotificationMetrics {
     private final Counter retryAttemptsCounter;
     private final Counter retrySuccessCounter;
 
-    // 타이머
-    private final Timer notificationProcessingTimer;
+    // 타이머 - 우선순위별 처리 시간
+    private final Map<String, Timer> notificationProcessingTimers;
     private final Timer emailSendingTimer;
     private final Timer feedProcessingTimer;
 
     // 상태 관련
     private final AtomicInteger currentlyProcessingNotifications;
     private final AtomicInteger emailQueueSize;
+
+    // 피드 구독자 수 게이지
+    private final Map<Long, AtomicInteger> feedSubscriberCounts;
+
+    // 대기 시간 측정 (큐 진입부터 처리까지)
+    private final Map<String, Timer> queueWaitTimers;
 
     // 실패 유형 카운터
     private final ConcurrentHashMap<String, Counter> emailFailuresByReason;
@@ -57,13 +63,39 @@ public class NotificationMetrics {
                 .description("알림 큐에 추가된 총 건수")
                 .register(registry);
 
-        this.notificationsProcessedCounter = Counter.builder("feedping.notifications.processed")
-                .description("성공적으로 처리된 알림 건수")
-                .register(registry);
+        // 우선순위별 처리/실패 카운터
+        this.notificationsProcessedCounters = new ConcurrentHashMap<>();
+        this.notificationsFailedCounters = new ConcurrentHashMap<>();
 
-        this.notificationsFailedCounter = Counter.builder("feedping.notifications.failed")
-                .description("처리에 실패한 알림 건수")
-                .register(registry);
+        // 우선순위별 타이머
+        this.notificationProcessingTimers = new ConcurrentHashMap<>();
+
+        // 각 우선순위별 메트릭 등록
+        List<String> priorities = List.of("high", "medium", "low");
+        for (String priority : priorities) {
+            // 처리 카운터
+            notificationsProcessedCounters.put(priority,
+                    Counter.builder("feedping.notifications.processed")
+                            .tag("priority", priority)
+                            .description("우선순위별 성공적으로 처리된 알림 건수")
+                            .register(registry));
+
+            // 실패 카운터
+            notificationsFailedCounters.put(priority,
+                    Counter.builder("feedping.notifications.failed")
+                            .tag("priority", priority)
+                            .description("우선순위별 처리에 실패한 알림 건수")
+                            .register(registry));
+
+            // 처리 시간 타이머
+            notificationProcessingTimers.put(priority,
+                    Timer.builder("feedping.notifications.processing.time")
+                            .tag("priority", priority)
+                            .description("우선순위별 알림 처리 소요 시간 (ms)")
+                            .publishPercentiles(0.5, 0.95, 0.99)
+                            .publishPercentileHistogram()
+                            .register(registry));
+        }
 
         this.emailsSentCounter = Counter.builder("feedping.emails.sent")
                 .description("전송된 이메일 총 건수")
@@ -127,12 +159,6 @@ public class NotificationMetrics {
                 .register(registry);
 
         // 타이머 초기화
-        this.notificationProcessingTimer = Timer.builder("feedping.notifications.processing.time")
-                .description("알림 처리 소요 시간 (ms)")
-                .publishPercentiles(0.5, 0.95, 0.99)
-                .publishPercentileHistogram()
-                .register(registry);
-
         this.emailSendingTimer = Timer.builder("feedping.emails.sending.time")
                 .description("이메일 전송 소요 시간 (ms)")
                 .publishPercentiles(0.5, 0.95, 0.99)
@@ -157,8 +183,35 @@ public class NotificationMetrics {
                 .description("이메일 전송 큐의 현재 크기")
                 .register(registry);
 
+        // 피드 구독자 수 게이지 초기화
+        this.feedSubscriberCounts = new ConcurrentHashMap<>();
+
+        // 대기 시간 측정 타이머
+        this.queueWaitTimers = new ConcurrentHashMap<>();
+        for (String priority : priorities) {
+            queueWaitTimers.put(priority,
+                    Timer.builder("feedping.queue.wait.time")
+                            .tag("priority", priority)
+                            .description("우선순위별 큐 대기 시간 (ms)")
+                            .publishPercentiles(0.5, 0.95, 0.99)
+                            .publishPercentileHistogram()
+                            .register(registry));
+        }
+
         // 실패 이유별 카운터 맵 초기화
         this.emailFailuresByReason = new ConcurrentHashMap<>();
+    }
+
+    // 피드 구독자 수 업데이트
+    public void updateFeedSubscriberCount(Long feedId, int count) {
+        feedSubscriberCounts.computeIfAbsent(feedId, id -> {
+            AtomicInteger value = new AtomicInteger(count);
+            Gauge.builder("feedping.feed.subscriber.count", value, AtomicInteger::get)
+                    .tag("rssFeedId", String.valueOf(id))
+                    .description("피드별 구독자 수")
+                    .register(registry);
+            return value;
+        }).set(count);
     }
 
     // 우선순위 큐 크기 업데이트
@@ -174,6 +227,14 @@ public class NotificationMetrics {
         }
 
         totalQueueSize.set(total);
+    }
+
+    // 큐 대기 시간 기록
+    public void recordQueueWaitTime(String priority, long milliseconds) {
+        Timer timer = queueWaitTimers.getOrDefault(priority.toLowerCase(), queueWaitTimers.get("low"));
+        if (timer != null) {
+            timer.record(Duration.ofMillis(milliseconds));
+        }
     }
 
     // 배치 처리 메트릭
@@ -207,14 +268,22 @@ public class NotificationMetrics {
         notificationsQueuedCounter.increment(count);
     }
 
-    // 처리 완료된 알림 수 기록
-    public void recordProcessed(int count) {
-        notificationsProcessedCounter.increment(count);
+    // 처리 완료된 알림 수 기록 (우선순위별)
+    public void recordProcessed(String priority, int count) {
+        Counter counter = notificationsProcessedCounters.getOrDefault(
+                priority.toLowerCase(), notificationsProcessedCounters.get("low"));
+        if (counter != null) {
+            counter.increment(count);
+        }
     }
 
-    // 실패한 알림 수 기록
-    public void recordFailed(int count) {
-        notificationsFailedCounter.increment(count);
+    // 실패한 알림 수 기록 (우선순위별)
+    public void recordFailed(String priority, int count) {
+        Counter counter = notificationsFailedCounters.getOrDefault(
+                priority.toLowerCase(), notificationsFailedCounters.get("low"));
+        if (counter != null) {
+            counter.increment(count);
+        }
     }
 
     // 이메일 성공 카운터
@@ -257,9 +326,13 @@ public class NotificationMetrics {
                 .increment();
     }
 
-    // 알림 처리 시간 측정
-    public void recordProcessingTime(long milliseconds) {
-        notificationProcessingTimer.record(Duration.ofMillis(milliseconds));
+    // 알림 처리 시간 측정 (우선순위별)
+    public void recordProcessingTime(String priority, long milliseconds) {
+        Timer timer = notificationProcessingTimers.getOrDefault(
+                priority.toLowerCase(), notificationProcessingTimers.get("low"));
+        if (timer != null) {
+            timer.record(Duration.ofMillis(milliseconds));
+        }
     }
 
     // 이메일 전송 시간 측정
@@ -297,10 +370,14 @@ public class NotificationMetrics {
         return Timer.start(registry);
     }
 
-    // 알림 처리 타이머 종료 및 기록
-    public void stopProcessingTimer(Timer.Sample sample) {
-        long timeNanos = sample.stop(notificationProcessingTimer);
-        recordProcessingTime(timeNanos / 1_000_000);
+    // 알림 처리 타이머 종료 및 기록 (우선순위별)
+    public void stopProcessingTimer(String priority, Timer.Sample sample) {
+        Timer timer = notificationProcessingTimers.getOrDefault(
+                priority.toLowerCase(), notificationProcessingTimers.get("low"));
+        if (timer != null) {
+            long timeNanos = sample.stop(timer);
+            recordProcessingTime(priority, timeNanos / 1_000_000);
+        }
     }
 
     // 이메일 전송 타이머 종료 및 기록

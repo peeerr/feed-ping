@@ -27,7 +27,7 @@ public class PriorityNotificationQueue {
     private final NotificationMetrics metrics;
 
     public enum Priority {
-        HIGH(0),    // 구독자 100명 이상 (t2.micro 환경 고려)
+        HIGH(0),    // 구독자 100명 이상
         MEDIUM(1),  // 구독자 20-99명
         LOW(2);     // 구독자 20명 미만
 
@@ -55,10 +55,15 @@ public class PriorityNotificationQueue {
         try {
             // 모든 피드의 구독자 수 로드
             subscriberRepository.findFeedSubscriberCounts().forEach(
-                    feedCount -> feedSubscriberCountCache.put(
-                            feedCount.getRssFeedId(),
-                            feedCount.getSubscriberCountAsInt()
-                    )
+                    feedCount -> {
+                        int count = feedCount.getSubscriberCountAsInt();
+                        feedSubscriberCountCache.put(
+                                feedCount.getRssFeedId(),
+                                count
+                        );
+                        // 메트릭에도 구독자 수 등록
+                        metrics.updateFeedSubscriberCount(feedCount.getRssFeedId(), count);
+                    }
             );
 
             log.info("피드 구독자 수 초기화 완료: {} 개의 피드", feedSubscriberCountCache.size());
@@ -110,7 +115,7 @@ public class PriorityNotificationQueue {
     private Priority calculatePriority(Long rssFeedId) {
         int subscriberCount = feedSubscriberCountCache.getOrDefault(rssFeedId, 0);
 
-        if (subscriberCount >= 100) {  // t2.micro 환경에 맞게 임계값 조정
+        if (subscriberCount >= 100) {
             return Priority.HIGH;
         } else if (subscriberCount >= 20) {
             return Priority.MEDIUM;
@@ -119,9 +124,16 @@ public class PriorityNotificationQueue {
         }
     }
 
+    // 구독자 수 조회 메서드 (외부에서 사용 가능)
+    public int getSubscriberCount(Long rssFeedId) {
+        return feedSubscriberCountCache.getOrDefault(rssFeedId, 0);
+    }
+
     // 구독자 수 캐시 업데이트 메서드
     public void updateSubscriberCount(Long rssFeedId, int count) {
         feedSubscriberCountCache.put(rssFeedId, count);
+        // 메트릭에도 업데이트
+        metrics.updateFeedSubscriberCount(rssFeedId, count);
     }
 
     // 메트릭 업데이트 메서드
